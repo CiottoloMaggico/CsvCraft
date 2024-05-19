@@ -1,32 +1,23 @@
 #include "fileutil.h"
 
 
-h_map *readCSVFile(char *path) {
-    h_map *data = mapBuild(0);
-    StringNode *curr, **head = malloc(sizeof(StringNode *)), **tail = malloc(sizeof(StringNode *));
+void readCSVFile(char *path, int fd[]) {
     wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *currWord = malloc(sizeof(wchar_t) * 31);
 
-    if (head == NULL || tail == NULL || charToString == NULL || currWord == NULL) {
+    if (charToString == NULL || currWord == NULL) {
         printf("out of memory\n");
-        return NULL;
+        return;
     }
 
     int wordLen = 0;
     FILE *file = fopen(path, "r");
     wint_t currChar = fgetwc(file);
-    *head = *tail = NULL;
 
     while (currChar != WEOF) {
         if (currChar == ',' || currChar == '\n') {
-            curr = createStrn(currWord, 0);
-            addStrnTail(tail, curr);
-            if (*head == NULL) {
-                *head = curr;
-            }
+            write(fd[1], currWord, sizeof(wchar_t) * 31);
             if (currChar == '\n') {
-                processCSV(head, data);
-                purgeStringList(head, 0);
-                *head = *tail = NULL;
+                write(fd[1], L"\n", sizeof(wchar_t) * 31);
             }
             wordLen = 0;
         } else {
@@ -43,48 +34,40 @@ h_map *readCSVFile(char *path) {
         currChar = fgetwc(file);
     }
 
-    free(head);
-    free(tail);
+    write(fd[1], L"--", sizeof(wchar_t) * 3);
     free(currWord);
     free(charToString);
     fclose(file);
-    return data;
+    return;
 }
 
-h_map *readFile(char *path) {
-    h_map *data = mapBuild(0);
-    wchar_t *currWord = malloc(sizeof(wchar_t) * 35), *prevWord = malloc(sizeof(wchar_t) * 35);
-    wchar_t *charToString = malloc(sizeof(wchar_t) * 2);
-
-    if (currWord == NULL || charToString == NULL || prevWord == NULL) {
+void readFile(char *path, int fd[]) {
+    wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *currWord = malloc(sizeof(wchar_t) * 35);
+    if (currWord == NULL || charToString == NULL) {
         printf("out of memory\n");
-        return NULL;
+        return;
     }
 
-    swprintf(prevWord, 35, L"%lc", '.');
-    mapPut(data, prevWord, createMainNode());
     FILE *file = fopen(path, "r");
     wint_t currChar = fgetwc(file);
     int wordLen = 0;
 
     while (currChar != WEOF) {
-        if (wordLen == 0 && (currChar == ' ' || currChar == '\n')) {
-            currChar = fgetwc(file);
-            continue;
-        }
         swprintf(charToString, 2, L"%lc", towlower(currChar));
-        if (currChar == ' ' || currChar == '\n' || currChar == '!' || currChar == '?' || currChar == '.') {
+        if (iswalnum(currChar) == 0) {
             if (wordLen != 0) {
-                processFile(prevWord, currWord, data);
-                wcscpy(prevWord, currWord);
+                if (currChar == '\'') {
+                    wcscat(currWord, charToString);
+                    wordLen++;
+                }
+                write(fd[1], currWord, sizeof(wchar_t) * 35);
             }
-            if (currChar != ' ' && currChar != '\n') {
+            if (currChar == '!' || currChar == '?' || currChar == '.') {
                 wcscpy(currWord, charToString);
-                processFile(prevWord, currWord, data);
-                wcscpy(prevWord, currWord);
+                write(fd[1], currWord, sizeof(wchar_t) * 35);
             }
             wordLen = 0;
-        } else if (iswalpha(currChar) || iswalnum(currChar) || currChar == '\'') {
+        } else {
             if (wordLen == 0) {
                 wcscpy(currWord, charToString);
             } else {
@@ -94,16 +77,18 @@ h_map *readFile(char *path) {
         }
         currChar = fgetwc(file);
     }
-
+    if (wordLen != 0) {
+        write(fd[1], currWord, sizeof(wchar_t) * 35);
+    }
+    write(fd[1], L"--", sizeof(wchar_t) * 35);
     fclose(file);
     free(currWord);
-    free(prevWord);
     free(charToString);
-    return data;
+    return;
 }
 
 
-int writeCSVFile(h_map *fileContent, char *path) {
+int writeCSVFile(char *path, int fd[]) {
     FILE *file = fopen(path, "w");
 
     if (file == NULL) {
@@ -118,37 +103,55 @@ int writeCSVFile(h_map *fileContent, char *path) {
         return -2;
     }
 
-    StringNode **row, *curr;
-    h_node *currNode;
+    wchar_t *string = malloc(sizeof(wchar_t) * 40);
 
-    for (int i = 0; i < fileContent->capacity; i++) {
-        currNode = fileContent->data[i];
-        while (currNode != NULL) {
-            row = buildRow(currNode);
-            curr = *row;
-            while (curr != NULL) {
-                fwprintf(file, L"%ls", curr->word);
-                curr = curr->next;
-            }
-            purgeStringList(row, 1);
-            currNode = currNode->next;
+    while (1) {
+        if (read(fd[0], string, (sizeof(wchar_t) * 40)) == -1) {
+            printf("errore");
         }
+
+        if (wcscmp(string, L"--") == 0) {
+            break;
+        }
+        fwprintf(file, L"%ls", string);
     }
+
     fclose(file);
+    free(string);
     return 0;
 }
 
-void writeFile(StringNode **head, char *path) {
+void writeFile(char *path, int fd[]) {
     FILE *file = fopen(path, "w");
-    StringNode *curr = *head;
 
-    while (curr != NULL) {
-        fwprintf(file, L"%ls", curr->word);
-        curr = curr->next;
+    if (file == NULL) {
+        printf("An error occurs while opening file.\n");
+        return;
+    }
+
+    file = freopen(path, "a", file);
+
+    if (file == NULL) {
+        printf("An error occurs while opening file.\n");
+        return;
+    }
+
+    wchar_t *string = malloc(sizeof(wchar_t) * 40);
+
+    while (1) {
+        if (read(fd[0], string, (sizeof(wchar_t) * 40)) == -1) {
+            printf("errore");
+        }
+
+        if (wcscmp(string, L"--") == 0) {
+            break;
+        }
+        fwprintf(file, L"%ls", string);
     }
 
     fclose(file);
-    purgeStringList(head, 1);
+    free(string);
+    return;
 }
 
 

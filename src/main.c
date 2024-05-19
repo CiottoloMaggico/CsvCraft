@@ -1,13 +1,4 @@
-#include <locale.h>
-#include <stdlib.h>
-#include <wctype.h>
-#include <wchar.h>
-#include <unistd.h>
-#include <time.h>
-#include "include/argtable3.h"
-#include "include/fileutil.h"
-#include "include/textgen.h"
-#include "include/map.h"
+#include "main.h"
 
 struct arg_lit *help;
 struct arg_int *mode, *wordNumber;
@@ -15,36 +6,84 @@ struct arg_file *inputFile, *outputFile;
 struct arg_str *startingWord;
 struct arg_end *end;
 
-
 int programMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
                 wchar_t *beginWord) {
+    // eseguo il compito corretto in base alle opzioni prese in input
     if (setlocale(LC_ALL, "C.UTF-8") == NULL) {
         return -1;
     }
     srand(time(NULL));
-    int exitCode = 0;
+    int exitCode = 0, fd1[2], fd2[2], pid;
     h_map *data;
     char *inputPath = strdup(*inputFilePath), *outputPath = strdup(*outputFilePath);
 
+
     switch (programMode) {
         case 1:
-            data = readFile(inputPath);
-            if (data == NULL) {
-                exitCode = -1;
-                break;
+            pipe(fd1);
+            pipe(fd2);
+            pid = fork();
+
+            if (pid == 0) {
+                close(fd1[0]);
+                readFile(inputPath, fd1);
+                close(fd1[1]);
+            } else if (pid > 0) {
+                pid = fork();
+
+                if (pid == 0) {
+                    close(fd2[1]);
+                    exitCode = writeCSVFile(outputPath, fd2);
+                    close(fd2[0]);
+                } else if (pid > 0) {
+                    close(fd1[1]);
+                    close(fd2[0]);
+                    h_map *dataHashMap = processFile(fd1);
+                    if (dataHashMap != NULL) {
+                        close(fd1[0]);
+                        buildFileRows(dataHashMap, fd2);
+                        close(fd2[1]);
+                        freeMap(dataHashMap);
+                    } else {
+                        write(fd2[1], L"--", sizeof(wchar_t) * 3);
+                    }
+                } else if (pid == -1) {
+                    exit(-1);
+                }
+            } else if (pid == -1) {
+                exit(-1);
             }
-            exitCode = writeCSVFile(data, outputPath);
-            freeMap(data);
             break;
         case 2:
-            data = readCSVFile(inputPath);
-            if (data == NULL) {
-                exitCode = -1;
-                break;
+            pipe(fd1);
+            pipe(fd2);
+            pid = fork();
+
+            if (pid == 0) {
+                close(fd1[0]);
+                readCSVFile(inputPath, fd1);
+                close(fd1[1]);
+            } else if (pid > 0) {
+                pid = fork();
+
+                if (pid == 0) {
+                    writeFile(outputPath, fd2);
+                } else if (pid > 0) {
+                    data = processCSV(fd1);
+                    exitCode = generateText(data, outputPath, wordN, beginWord, fd2);
+                } else if (pid < 0) {
+                    printf("error 1");
+                }
+
+            } else if (pid == -1) {
+                exit(-1);
             }
-            exitCode = generateText(data, outputPath, wordN, beginWord);
+
             break;
     }
+
+
+    _exit(0);
 
     free(inputPath);
     free(outputPath);
@@ -52,6 +91,7 @@ int programMain(int programMode, const char **inputFilePath, const char **output
 }
 
 int main(int argc, char **argv) {
+    // Uso TableArg3 per prendere in input le opzioni del programma, fino a riga 174 effettuo controlli sulla validità dell'input.
     wchar_t *sWord = NULL;
     const char *progname = "csvcraft";
     int exitCode = -1;
@@ -86,6 +126,12 @@ int main(int argc, char **argv) {
         printf("Usage: %s", progname);
         arg_print_syntax(stdout, argtable, "\n");
         arg_print_glossary(stdout, argtable, "\n");
+        exitCode = 0;
+        goto exit;
+    }
+
+    if (access(*inputFile->filename, F_OK) != 0 || access(*inputFile->filename, R_OK) != 0) {
+        printf("The input file doesn't exists or the program doesn't have read permissions.\n");
         exitCode = 0;
         goto exit;
     }

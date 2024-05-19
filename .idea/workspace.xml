@@ -11,12 +11,26 @@
   </component>
   <component name="CMakeSettings">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" ENABLED="false" CONFIG_NAME="Debug" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="43d5e046-8823-47ef-877e-20502392404f" name="Changes" comment="Single process version">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/customTargets.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/doc/README.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/include/utils.c" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefile" beforeDir="false" afterPath="$PROJECT_DIR$/makefile" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/dstruct.c" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/dstruct.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/utils.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/fileutil.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/fileutil.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/fileutil.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/fileutil.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/map.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/map.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/textgen.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/textgen.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.c" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -79,7 +93,7 @@
     </option>
   </component>
   <component name="OCResolveContextSettings">
-    <option name="configuration" value="$PROJECT_DIR$/main.c" />
+    <option name="configuration" value="$PROJECT_DIR$/src/include/fileutil.c" />
   </component>
   <component name="ProblemsViewState">
     <option name="selectedTabId" value="CurrentFile" />
@@ -99,41 +113,42 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "C/C++ File.main.c.executor": "Debug",
-    "Makefile Target.%.o.executor": "Run",
-    "Makefile Target.all.executor": "Run",
-    "Makefile Target.debug.executor": "Run",
-    "Makefile Target.main.executor": "Run",
-    "Native Application.Debug.executor": "Run",
-    "Native Application.all compito 1.executor": "Run",
-    "Native Application.all compito 2 con sw.executor": "Run",
-    "Native Application.all compito 2 senza sw.executor": "Run",
-    "Native Application.all compito 2.executor": "Debug",
-    "Native Application.all.executor": "Debug",
-    "Native Application.debug compito 1.executor": "Run",
-    "Native Application.debug compito 2 con sw.executor": "Run",
-    "Native Application.debug compito 2.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.cidr.known.project.marker": "true",
-    "RunOnceActivity.readMode.enableVisualFormatting": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "cf.first.check.clang-format": "false",
-    "cidr.known.project.marker": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "vcs.Git",
-    "two.files.diff.last.used.file": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/progetto/bin/out_csv (v2).csv",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;C/C++ File.main.c.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.%.o.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.all.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.debug.executor&quot;: &quot;Run&quot;,
+    &quot;Makefile Target.main.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.Debug.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.all compito 1.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.all compito 2 con sw.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.all compito 2 senza sw.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.all compito 2.executor&quot;: &quot;Debug&quot;,
+    &quot;Native Application.all.executor&quot;: &quot;Debug&quot;,
+    &quot;Native Application.debug compito 1.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.debug compito 2 con sw.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.debug compito 2 senza sw.executor&quot;: &quot;Run&quot;,
+    &quot;Native Application.debug compito 2.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.readMode.enableVisualFormatting&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;cf.first.check.clang-format&quot;: &quot;false&quot;,
+    &quot;cidr.known.project.marker&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr.csv&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;run.code.analysis.last.selected.profile&quot;: &quot;pProject Default&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;CLionExternalConfigurable&quot;,
+    &quot;two.files.diff.last.used.file&quot;: &quot;/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr.csv&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/src/include" />
@@ -146,13 +161,13 @@
       <recent name="$PROJECT_DIR$/assets" />
     </key>
   </component>
-  <component name="RunManager" selected="Native Application.debug compito 2 con sw">
+  <component name="RunManager" selected="Native Application.debug compito 1">
     <configuration name="Debug" type="CLionNativeAppRunConfigurationType" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/progetto">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="all compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 1 -i &quot;lotr.txt&quot; -o &quot;lotr.csv&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="all compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 1 -i &quot;lotr.txt&quot; -o &quot;lotr_mp.csv&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
@@ -162,7 +177,7 @@
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="all compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen.txt&quot; --word-number 100000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="all compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10000000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
@@ -177,17 +192,17 @@
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 1 -i &quot;shrek.txt&quot; -o &quot;shrek.csv&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 1 -i &quot;lotr.txt&quot; -o &quot;lotr_out.csv&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 2 con sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;shrek.csv&quot; -o &quot;shrek_gen.txt&quot; --word-number 1000 --starting-word &quot;sto cazzo&quot;" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 2 con sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10000000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen.txt&quot; --word-number 1000000 " REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
@@ -202,9 +217,29 @@
         <option name="CLION.COMPOUND.BUILD" enabled="true" />
       </method>
     </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
+    <configuration name="argtable3" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="argtable3.c" CONFIG_NAME="argtable3">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/include/argtable3.c" />
       <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="dstruct" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="dstruct.c" CONFIG_NAME="dstruct">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/include/dstruct.c" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="fileutil" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="fileutil.c" CONFIG_NAME="fileutil">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/include/fileutil.c" />
+      <method v="2">
+        <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="main.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" PROGRAM_PARAMS="-m 1 -i lotr.txt -o lotr.csv" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="main.c - Progetto SOII" CONFIG_NAME="main.c">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/main.c" />
+      <option name="toolchainName" value="Progetto SOII" />
+      <method v="2">
+        <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
     <configuration name="main.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="progetto" TARGET_NAME="main.c" CONFIG_NAME="main.c">
@@ -213,14 +248,14 @@
         <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="main.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="progetto" TARGET_NAME="main.c" CONFIG_NAME="main.c">
-      <option name="sourceFile" value="main.c" />
+    <configuration name="map" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="map.c" CONFIG_NAME="map">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/include/map.c" />
       <method v="2">
         <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="main.c" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" temporary="true" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="progetto" TARGET_NAME="main.c" CONFIG_NAME="main.c">
-      <option name="sourceFile" value="main.c" />
+    <configuration name="textgen" type="CppFileRunConfiguration" factoryName="CppFileRunConfiguration" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="textgen.c" CONFIG_NAME="textgen">
+      <option name="sourceFile" value="$PROJECT_DIR$/src/include/textgen.c" />
       <method v="2">
         <option name="com.jetbrains.cidr.cpp.runfile.CppFileBuildBeforeRunTaskProvider$BasicBuildBeforeRunTask" enabled="true" />
       </method>
@@ -298,6 +333,11 @@
       <method v="2" />
     </configuration>
     <list>
+      <item itemvalue="C/C++ File.textgen" />
+      <item itemvalue="C/C++ File.map" />
+      <item itemvalue="C/C++ File.fileutil" />
+      <item itemvalue="C/C++ File.dstruct" />
+      <item itemvalue="C/C++ File.argtable3" />
       <item itemvalue="C/C++ File.main.c" />
       <item itemvalue="Makefile Target.debug" />
       <item itemvalue="Makefile Target.all" />
@@ -315,9 +355,9 @@
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="C/C++ File.main.c" />
         <item itemvalue="Makefile Target.main" />
         <item itemvalue="Makefile Target.%.o" />
-        <item itemvalue="C/C++ File.main.c" />
         <item itemvalue="Makefile Target.main" />
         <item itemvalue="Makefile Target.%.o" />
       </list>
@@ -367,7 +407,22 @@
       <workItem from="1714316856455" duration="161000" />
       <workItem from="1714317038014" duration="399000" />
       <workItem from="1714317446680" duration="160000" />
-      <workItem from="1714317615039" duration="164000" />
+      <workItem from="1714317615039" duration="196000" />
+      <workItem from="1714317818479" duration="649000" />
+      <workItem from="1714318474305" duration="830000" />
+      <workItem from="1714319312306" duration="23000" />
+      <workItem from="1714326985290" duration="11733000" />
+      <workItem from="1714373997388" duration="7614000" />
+      <workItem from="1714389828705" duration="997000" />
+      <workItem from="1714419324576" duration="226000" />
+      <workItem from="1714478441870" duration="93000" />
+      <workItem from="1714480466917" duration="1239000" />
+      <workItem from="1714482271390" duration="2343000" />
+      <workItem from="1715457695711" duration="10000" />
+      <workItem from="1715681146965" duration="1522000" />
+      <workItem from="1715792811201" duration="4719000" />
+      <workItem from="1715853104660" duration="2221000" />
+      <workItem from="1716130982371" duration="11895000" />
     </task>
     <task id="LOCAL-00001" summary="Single process version">
       <option name="closed" value="true" />
@@ -393,7 +448,15 @@
       <option name="project" value="LOCAL" />
       <updated>1714317560495</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Single process version">
+      <option name="closed" value="true" />
+      <created>1714317789905</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1714317789906</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">

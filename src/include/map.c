@@ -23,6 +23,8 @@ void freeMapNodes(h_map *map) {
     free(map->data);
 }
 
+
+// Calcola l'hash per il valora in data in base all'hashmap "map" data in input
 static long long hash(h_map *map, wchar_t *data) {
     long long p = 3, result = 0;
     int dataLength = wcslen(data);

@@ -1,6 +1,6 @@
 CC := gcc
 CFLAGS := -Wall -Wextra -O3 -lm
-PROGS := src/main.c src/include/fileutil.c src/include/dstruct.c src/include/textgen.c src/include/map.c src/include/argtable3.c
+PROGS := src/main.c src/include/fileutil.c src/include/utils.c src/include/textgen.c src/include/map.c src/include/argtable3.c
 OBJ = obj
 SRC = src
 OUT = bin/csvcraft
