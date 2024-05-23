@@ -1,5 +1,94 @@
 #include "textgen.h"
 
+void buildRow(h_node *node, int mode, ...) {
+    wchar_t *currWord;
+    va_list ptr;
+    va_start(ptr, mode);
+    int *fd = (mode == 0) ? va_arg(ptr, int *) : NULL;
+    FILE *file = (mode == 1) ? va_arg(ptr, FILE *) : NULL;
+
+    // recupero degli argomenti aggiuntivi e inizializzazione delle variabili in base alla modalità di invocazione
+    // 0: single-process, 1: multi-process
+    switch (mode) {
+        case 0:
+            if (fd == NULL) { exit(4); }
+            currWord = malloc(sizeof(wchar_t) * 40);
+            if (currWord == NULL) {
+                printf("Out of memory\n");
+                exit(-1);
+            }
+            if (write(fd[1], node->key, sizeof(wchar_t) * 40) == -1) {
+                printf("Cannot write on the pipe\n");
+                exit(-2);
+            }
+            break;
+        case 1:
+            if (file == NULL) { exit(4); }
+            if (fwprintf(file, L"%ls", node->key) == -1) {
+                printf("Cannot write on the output file\n");
+                exit(-2);
+            }
+            break;
+        default:
+            // mode invalida
+            printf("Invalid mode code\n");
+            exit(3);
+            break;
+    }
+    va_end(ptr);
+
+    MainNode *mainNode = node->val;
+    FreqNode *currFreq;
+    h_map *successors = mainNode->successors;
+    h_node *currNode;
+
+    // Scorro tutto l'hashmap di successori di "node->key"
+    for (int i = 0; i < successors->capacity; i++) {
+        currNode = successors->data[i];
+        // Per ogni bucket dell'hashmap recupero e analizzo tutti i nodi nel bucket (potrebbero esserci collisioni)
+        while (currNode != NULL) {
+            // per ogni successore di node->key genero
+            // la sua porzione di stringa ossia ",{successore},{frequenza successore}" e la passo alla pipe
+            currFreq = currNode->val;
+            currFreq->frequency = (double) currFreq->occurrences / mainNode->nSuccessors;
+
+            // in base alla modalità scelta decido dove scrivere il valore calcolato
+            switch (mode) {
+                case 0:
+                    swprintf(currWord, 40, L",%ls,%.4g", currNode->key, currFreq->frequency);
+                    if (write(fd[1], currWord, sizeof(wchar_t) * 40) == -1) {
+                        printf("Cannot write on the pipe\n");
+                        exit(-2);
+                    }
+                    break;
+                case 1:
+                    if (fwprintf(file, L",%ls,%.4g", currNode->key, currFreq->frequency) == -1) {
+                        printf("Cannot write on the output file\n");
+                        exit(-2);
+                    }
+                    break;
+            }
+
+            free(currFreq);
+            currNode = currNode->next;
+        }
+    }
+
+    // scrivo "\n" sulla "memoria" di output in modo da terminare la riga relativa a node->key e pulisco la memoria
+    switch (mode) {
+        case 0:
+            write(fd[1], L"\n", sizeof(wchar_t) * 40);
+            free(currWord);
+            break;
+        case 1:
+            fwprintf(file, L"\n");
+            break;
+    }
+    freeMap(mainNode->successors);
+    free(mainNode);
+    return;
+}
+
 wchar_t *findNextWord(h_node *node) {
     h_node *curr = node;
     FreqNode *currFreq;
@@ -47,7 +136,7 @@ wchar_t *findStartingWord(h_map *fileContent) {
     return findNextWord(startingPunctuation);
 }
 
-int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int fd[]) {
+int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...) {
     // Se la parola con cui iniziare il testo è stata fornita controlla se quest'ultima è valida.
     // Se la parola con cui iniziare il testo non è fornita ne sceglie una casualmente.
     if (startingWord == NULL) {
@@ -57,6 +146,40 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
             printf("Starting word not found.\n");
             return -1;
         }
+    }
+    // inizializzo le variabili in base alla modalità scelta e recupero gli argomenti aggiuntivi
+    FILE *file = NULL;
+    va_list ptr;
+    va_start(ptr, mode);
+    int *fd = (mode == 0) ? va_arg(ptr, int *) : NULL;
+    char *filePath = (mode == 1) ? va_arg(ptr, char *) : NULL;
+    va_end(ptr);
+
+
+    switch (mode) {
+        case 0:
+            if (fd == NULL) { exit(4); }
+            break;
+        case 1:
+            if (filePath == NULL) { exit(4); }
+            file = fopen(filePath, "w");
+
+            if (file == NULL) {
+                printf("An error occurs while opening file.\n");
+                return -2;
+            }
+
+            file = freopen(filePath, "a", file);
+
+            if (file == NULL) {
+                printf("An error occurs while opening file.\n");
+                return -2;
+            }
+            break;
+        default:
+            printf("Invalid mode code\n");
+            exit(3);
+            break;
     }
 
     wchar_t *formattedWord = malloc(sizeof(wchar_t) * 40);
@@ -93,70 +216,72 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
 
         // Scrivo nella pipe la parola formattata da scrivere nel TXT di output del compito 2
         // Inizializzo le variabili per il prossimo ciclo
-        write(fd[1], formattedWord, sizeof(wchar_t) * 40);
+        (mode == 0) ? write(fd[1], formattedWord, sizeof(wchar_t) * 40) : fwprintf(file, L"%ls", formattedWord);
         currWord = nextWord;
         currFrequencies = mapGet(fileContent, currWord);
         nextWord = findNextWord(currFrequencies);
     }
 
-    write(fd[1], L"--", sizeof(wchar_t) * 3);
+    // comunico al processo che scrive che ho terminato la generazione delle parole
+    if (mode == 0) {
+        write(fd[1], L"--", sizeof(wchar_t) * 3);
+    }
     purgeCSVNodes(fileContent);
     freeMap(fileContent);
     free(formattedWord);
     return 0;
 }
 
-void buildRow(h_node *node, int fd[]) {
-    wchar_t *currWord = malloc(sizeof(wchar_t) * 40);
-    if (currWord == NULL) {
-        printf("Out of memory\n");
-        exit(-1);
-    }
-    MainNode *mainNode = node->val;
-    FreqNode *currFreq;
-    h_map *successors = mainNode->successors;
-    h_node *currNode;
 
-    // Scrivo prima parola della riga del CSV nella pipe
-    write(fd[1], node->key, sizeof(wchar_t) * 40);
-
-    // Scorro tutto l'hashmap di successori di "node->key"
-    for (int i = 0; i < successors->capacity; i++) {
-        currNode = successors->data[i];
-        // Per ogni bucket dell'hashmap recupero e analizzo tutti i nodi nel bucket (potrebbero esserci collisioni)
-        while (currNode != NULL) {
-            // per ogni successore di node->key genero
-            // la sua porzione di stringa ossia ",{successore},{frequenza successore}" e la passo alla pipe
-            currFreq = currNode->val;
-            currFreq->frequency = (double) currFreq->occurrences / mainNode->nSuccessors;
-            swprintf(currWord, 40, L",%ls,%.4g", currNode->key, currFreq->frequency);
-            write(fd[1], currWord, sizeof(wchar_t) * 40);
-            free(currFreq);
-            currNode = currNode->next;
-        }
-    }
-
-    // scrivo "\n" sulla pipe in modo da terminare la riga relativa a node->key e pulisco la memoria
-    write(fd[1], L"\n", sizeof(wchar_t) * 40);
-    freeMap(mainNode->successors);
-    free(mainNode);
-    free(currWord);
-    return;
-}
-
-void buildFileRows(h_map *fileContent, int fd[]) {
+void buildFileRows(h_map *fileContent, int mode, ...) {
     // Analizzo tutti gli elementi di fileContent scorrendo tutto l'hashmap
+    FILE *file;
+    va_list ptr;
+    va_start(ptr, mode);
+    int *fd = (mode == 0) ? va_arg(ptr, int *) : NULL;
+    char *filePath = (mode == 1) ? va_arg(ptr, char *) : NULL;
+    va_end(ptr);
+
+    switch (mode) {
+        case 0:
+            if (fd == NULL) { exit(4);}
+            break;
+        case 1:
+            if (filePath == NULL) { exit(4);}
+            file = fopen(filePath, "w");
+
+            if (file == NULL) {
+                printf("An error occurs while opening file.\n");
+                exit(-2);
+            }
+            break;
+        default:
+            printf("Invalid mode code\n");
+            exit(3);
+            break;
+    }
+
     h_node *currNode;
 
     for (int i = 0; i < fileContent->capacity; i++) {
         currNode = fileContent->data[i];
         while (currNode != NULL) {
-            buildRow(currNode, fd);
+            switch (mode) {
+                case 0:
+                    buildRow(currNode, mode, fd);
+                    break;
+                case 1:
+                    buildRow(currNode, mode, file);
+                    break;
+            }
             currNode = currNode->next;
         }
     }
 
-    write(fd[1], L"--", sizeof(wchar_t) * 3);
+    // comunico al processo che scrive che ho terminato la generazione delle righe
+    if (mode == 0) {
+        write(fd[1], L"--", sizeof(wchar_t) * 3);
+    }
     return;
 }
 
@@ -168,33 +293,39 @@ h_map *processCSV(int fd[]) {
     headWord = NULL;
     int mode = 0;
 
-    if (hHead == NULL) {
+    if (hHead == NULL || currWord == NULL) {
         printf("Out of memory.\n");
         exit(-1);
     }
 
+    // leggo la prima parola dalla pipe
+    if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
+        printf("error");
+        _exit(-1);
+    }
+
+    if (wcscmp(currWord, L"--") == 0) {
+        printf("Il file di testo è vuoto!\n");
+        free(currWord);
+        free(hHead);
+        return NULL;
+    }
+
     // Leggo tutte le parole presenti nel CSV tramite la pipe scritta dal processo che legge il CSV
-    while (1) {
-        // Lettura nella pipe
-        if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
-            printf("error");
-            _exit(-1);
-        }
-
-        // file CSV terminato, tutte le parole sono state lette
-        if (wcscmp(currWord, L"--") == 0) {
-            break;
-        }
-
+    while (wcscmp(currWord, L"--") != 0) {
         // fine riga csv
         if (wcscmp(currWord, L"\n") == 0) {
-            // aggiungo il nodo costruito in base alla riga appena letta al dizionario data
+            // aggiungo il nodo costruito, in base alla riga appena letta, al dizionario data
             // il valore del nodo inserito nell'hashmap è la testa di una linked-list di h_node
             // ogni h_node rappresenta un successore di headWord
             mapPut(data, headWord, *hHead);
             free(headWord);
             headWord = NULL;
             *hHead = NULL;
+            if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
+                printf("error");
+                _exit(-1);
+            }
             continue;
         }
 
@@ -202,7 +333,6 @@ h_map *processCSV(int fd[]) {
         if (headWord == NULL) {
             // prima parola della riga
             headWord = wcsdup(currWord);
-            continue;
         } else {
             // continuo riga csv
             // da ora in poi si alternano "parola,frequenza" fino alla fine della riga ("\n")
@@ -220,11 +350,17 @@ h_map *processCSV(int fd[]) {
                     break;
             }
         }
+
+        if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
+            printf("error");
+            _exit(-1);
+        }
     }
     free(hHead);
     free(currWord);
     return data;
 }
+
 
 void addToData(h_map *data, wchar_t *prevWord, wchar_t *currWord) {
     // recupero il nodo associato a prevWord all'interno di "data"
@@ -279,20 +415,18 @@ h_map *processFile(int fd[]) {
 
     firstWord = wcsdup(currWord);
 
-    while (1) {
+    while (wcscmp(currWord, L"--") != 0) {
         // popolo l'hashmap "data"
         addToData(data, prevWord, currWord);
         wcscpy(prevWord, currWord);
+
         if (read(fd[0], currWord, (sizeof(wchar_t) * 35)) == -1) {
             printf("errore\n");
         };
-        if (wcscmp(currWord, L"--") == 0) {
-            // la parola successiva all'ultima parola del file è la prima
-            addToData(data, prevWord, firstWord);
-            break;
-        }
     }
 
+    // l'ultima parola del file è seguita dalla prima
+    addToData(data, prevWord, firstWord);
     free(currWord);
     free(prevWord);
     return data;

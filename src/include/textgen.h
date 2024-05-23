@@ -2,6 +2,7 @@
 #define PROGETTO_TEXTGEN_H
 
 #include <stdio.h>
+#include <stdarg.h>
 #include <stdlib.h>
 #include <string.h>
 #include <wchar.h>
@@ -23,7 +24,6 @@ wchar_t *findNextWord(h_node *node);
  *
 */
 
-
 wchar_t *findStartingWord(h_map *fileContent);
 /*
  * input:
@@ -34,7 +34,7 @@ wchar_t *findStartingWord(h_map *fileContent);
  *                    all'insieme dei successori delle parole: "?", "!", "." .
 */
 
-int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int fd[]);
+int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...);
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
@@ -42,25 +42,36 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
  * int wordsNumber => numero di parole da generare
  * wchar_t startingWord => parola con cui iniziare la generazione,
  *            se non fornita ne verrà scelta una in modo casuale usando findStartingWord()
- * int fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
- *             processo che scrive le parole generate sul file di output del compito 2
+ * int mode => numero intero, 0 o 1, che specifica se eseguire il task in modalità multi-processo o singolo-processo
+ * Se mode == 0:
+ *  deve essere fornito come argomento aggiuntivo:
+ *      int *fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
+ *                  processo che scrive le parole generate sul file di output del compito 2
+ * Se mode == 1:
+ * deve essere fornito come argomento aggiuntivo:
+ *      char *path => nome del file TXT da scrivere
  * output:
  * int result => exitCode della funzione, se viene ritornato 0 allora l'esecuzione è andata a buon fine
 */
 
-void buildFileRows(h_map *fileContent, int fd[]);
+void buildFileRows(h_map *fileContent, int mode, ...);
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
  *                       il contenuto del file TXT dato in input nel compito 1.
- * int fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
- *             processo che scrive le parole generate sul file di output del compito 1.
+ * int mode => numero intero, 0 o 1, che specifica se eseguire il task in modalità multi-processo o singolo-processo
+ * Se mode == 0:
+ *  deve essere fornito come argomento aggiuntivo:
+ *      int *fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
+ *                  processo che scrive le righe generate sul file di output del compito 1
+ * Se mode == 1:
+ *  deve essere fornito come argomento aggiuntivo:
+ *      char *path => nome del file CSV da scrivere
  * output:
  * void result => non fornisce nessun output.
 */
 
-
-void buildRow(h_node *node, int fd[]);
+void buildRow(h_node *node, int mode, ...);
 /*
  * input:
  * h_node *node => puntatore ad un nodo appartenente all'hashmap che rappresenta il contenuto del file TXT
@@ -68,9 +79,14 @@ void buildRow(h_node *node, int fd[]);
  *                 di output per la parola node->key.
  *                 node->key: rappresenta la prima parola della riga
  *                 node->val: è un nodo di tipo MainNode che contiene le informazione circa i successori di node->key
- *
- * int fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
- *             processo che scrive le parole generate sul file di output del compito 1.
+ * int mode => numero intero, 0 o 1, che specifica se eseguire il task in modalità multi-processo o singolo-processo
+ * Se mode == 0:
+ *  deve essere fornito come argomento aggiuntivo:
+ *      int *fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
+ *                  processo che scrive le righe generate sul file di output del compito 1
+ * Se mode == 1:
+ *  deve essere fornito come argomento aggiuntivo:
+ *      FILE *file => output stream su cui scrivere la riga
  * output:
  * void result => non fornisce nessun output.
 */

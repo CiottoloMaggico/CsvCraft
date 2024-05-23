@@ -1,13 +1,45 @@
 #include "main.h"
 
-struct arg_lit *help;
+struct arg_lit *help, *processes;
 struct arg_int *mode, *wordNumber;
 struct arg_file *inputFile, *outputFile;
 struct arg_str *startingWord;
 struct arg_end *end;
 
-int programMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
-                wchar_t *beginWord) {
+int singleProcessMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
+                      wchar_t *beginWord) {
+    if (setlocale(LC_ALL, "C.UTF-8") == NULL) {
+        return -1;
+    }
+    srand(time(NULL));
+    int exitCode = 0;
+    h_map *data;
+    char *inputPath = strdup(*inputFilePath), *outputPath = strdup(*outputFilePath);
+
+    switch (programMode) {
+        case 1:
+            data = readAndBuildFileMap(inputPath);
+            if (data == NULL) {
+                exitCode = 5;
+                break;
+            }
+            buildFileRows(data, 1, outputPath);
+            break;
+        case 2:
+            data = readAndBuildCSVMap(inputPath);
+            if (data == NULL) {
+                exitCode = 5;
+                break;
+            }
+            exitCode = generateText(data, wordN, beginWord, 1, outputPath);
+            break;
+    }
+    return exitCode;
+}
+
+
+int multiProcessMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
+                     wchar_t *beginWord) {
     // eseguo il compito corretto in base alle opzioni prese in input
     if (setlocale(LC_ALL, "C.UTF-8") == NULL) {
         return -1;
@@ -33,20 +65,21 @@ int programMain(int programMode, const char **inputFilePath, const char **output
 
                 if (pid == 0) {
                     close(fd2[1]);
-                    exitCode = writeCSVFile(outputPath, fd2);
+                    exitCode = writeFileFromPipe(outputPath, fd2);
+
                     close(fd2[0]);
                 } else if (pid > 0) {
                     close(fd1[1]);
                     close(fd2[0]);
                     h_map *dataHashMap = processFile(fd1);
-                    if (dataHashMap != NULL) {
-                        close(fd1[0]);
-                        buildFileRows(dataHashMap, fd2);
-                        close(fd2[1]);
-                        freeMap(dataHashMap);
-                    } else {
-                        write(fd2[1], L"--", sizeof(wchar_t) * 3);
+                    if (dataHashMap == NULL) {
+                        kill(pid, SIGKILL);
+                        break;
                     }
+                    close(fd1[0]);
+                    buildFileRows(dataHashMap, 0, &fd2);
+                    close(fd2[1]);
+                    freeMap(dataHashMap);
                 } else if (pid == -1) {
                     exit(-1);
                 }
@@ -67,23 +100,24 @@ int programMain(int programMode, const char **inputFilePath, const char **output
                 pid = fork();
 
                 if (pid == 0) {
-                    writeFile(outputPath, fd2);
+                    exitCode = writeFileFromPipe(outputPath, fd2);
                 } else if (pid > 0) {
                     data = processCSV(fd1);
-                    exitCode = generateText(data, outputPath, wordN, beginWord, fd2);
-                } else if (pid < 0) {
-                    printf("error 1");
+                    if (data == NULL) {
+                        kill(pid, SIGKILL);
+                        break;
+                    }
+                    exitCode = generateText(data, wordN, beginWord, 0, fd2);
+                } else if (pid == -1) {
+                    exit(-1);
                 }
-
             } else if (pid == -1) {
                 exit(-1);
             }
-
             break;
     }
 
-
-    _exit(0);
+    _exit(exitCode);
 
     free(inputPath);
     free(outputPath);
@@ -98,7 +132,8 @@ int main(int argc, char **argv) {
 
     void *argtable[] = {
             help = arg_litn("h", "help", 0, 1, "show program usage"),
-            mode = arg_intn("m", "mode", "{0, 1}", 1, 1, "select the task to perform"),
+            mode = arg_intn("m", "mode", "{1, 2}", 1, 1, "select the task to perform"),
+            processes = arg_litn("p", "multi-process", 0, 1, "execute the task in multiprocess mode"),
             inputFile = arg_filen("i", "input-file", "<file>", 1, 1, "specify the path of input file"),
             outputFile = arg_filen("o", "output-file", "<file>", 1, 1, "specify the path of output file"),
             wordNumber = arg_intn(NULL, "word-number", "<int>", 0, 1,
@@ -138,14 +173,14 @@ int main(int argc, char **argv) {
 
     switch (*mode->ival) {
         case 1:
-            if (strcmp(*inputFile->extension, ".txt") != 0 && strcmp(*outputFile->extension, ".csv") != 0) {
+            if (strcmp(*inputFile->extension, ".txt") != 0 || strcmp(*outputFile->extension, ".csv") != 0) {
                 printf("For mode 1 you need to provide a txt input file and a csv one for the output\n");
                 exitCode = 0;
                 goto exit;
             }
             break;
         case 2:
-            if (strcmp(*inputFile->extension, ".csv") != 0 && strcmp(*outputFile->extension, ".txt") != 0) {
+            if (strcmp(*inputFile->extension, ".csv") != 0 || strcmp(*outputFile->extension, ".txt") != 0) {
                 printf("For mode 2 you need to provide a csv input file and a txt one for the output\n");
                 exitCode = 0;
                 goto exit;
@@ -172,8 +207,13 @@ int main(int argc, char **argv) {
     }
 
 
-    exitCode = programMain(*mode->ival, inputFile->filename, outputFile->filename, *wordNumber->ival,
-                           sWord);
+    if (processes->count > 0) {
+        exitCode = multiProcessMain(*mode->ival, inputFile->filename, outputFile->filename, *wordNumber->ival,
+                                    sWord);
+    } else {
+        exitCode = singleProcessMain(*mode->ival, inputFile->filename, outputFile->filename, *wordNumber->ival,
+                                     sWord);
+    }
 
     exit:
     free(sWord);

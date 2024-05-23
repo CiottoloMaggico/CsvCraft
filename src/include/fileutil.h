@@ -11,14 +11,42 @@
 #include "textgen.h"
 #include "utils.h"
 
-void readCSVFile(char *path, int fd[]);
+wchar_t *nextCSVColumn(FILE *file);
+/*
+ * input:
+ * FILE *file => stream del file csv da leggere
+ * output:
+ * wchar_t *result => caratteri letti dallo stream fino alla prima ",".
+ *                    Nel caso il primo carattere letto è "\n", questo viene ritornato immediatamente per comunicare la fine della riga.
+ *                    Nel caso in cui il primo carattere letto è WEOF ritorna un puntatore nullo.
+*/
+
+
+h_map *readAndBuildFileMap(char *path);
+/*
+ * input:
+ * char *path => percorso del file in input
+ * output:
+ * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file TXT dato in input per il compito 1.
+*/
+
+h_map *readAndBuildCSVMap(char *path);
+/*
+ * input:
+ * char *path => percorso del file in input
+ * output:
+ * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file CSV dato in input per il compito 2.
+*/
+
+
+int readCSVFile(char *path, int fd[]);
 /*
  * input:
  * char *path => nome del file CSV da leggere
  * int fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
  *             processo che costruisce la struttura dati per eseguire il compito 2.
  * output:
- * void result => non restituisce output
+ * int result => exit code
 */
 
 void readFile(char *path, int fd[]);
@@ -31,7 +59,7 @@ void readFile(char *path, int fd[]);
  * void result => non restituisce output
 */
 
-int writeCSVFile(char *path, int fd[]);
+int writeFileFromPipe(char *path, int fd[]);
 /*
  * input:
  * char *path => nome del file CSV da scrivere
@@ -41,15 +69,6 @@ int writeCSVFile(char *path, int fd[]);
  * int result => exitcode, se uguale a 0 allora l'esecuzione è terminata senza errori
 */
 
-void writeFile(char *path, int fd[]);
-/*
- * input:
- * char *path => nome del file TXT da scrivere
- * int fd[] => array di file descriptors relativi alla pipe usata per comunicare con il
- *             processo che calcola le parole da scrivere nel TXT per eseguire il compito 2.
- * output:
- * void result => non restituisce output
-*/
 
 
 #endif
