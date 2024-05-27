@@ -1,38 +1,35 @@
 #include "textgen.h"
 
-void buildRow(h_node *node, int mode, ...) {
+int buildRow(h_node *node, int mode, ...) {
+    assert(mode == 0 || mode == 1);
     wchar_t *currWord;
     va_list ptr;
     va_start(ptr, mode);
-    int *fd = (mode == 0) ? va_arg(ptr, int *) : NULL;
+    int *fd = (mode == 0) ? va_arg(ptr, int *) : NULL, exitCode = NO_ERROR;
     FILE *file = (mode == 1) ? va_arg(ptr, FILE *) : NULL;
 
     // recupero degli argomenti aggiuntivi e inizializzazione delle variabili in base alla modalità di invocazione
     // 0: single-process, 1: multi-process
     switch (mode) {
         case 0:
-            if (fd == NULL) { exit(4); }
-            currWord = malloc(sizeof(wchar_t) * 40);
+            assert(fd != NULL);
+            currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
             if (currWord == NULL) {
-                printf("Out of memory\n");
-                exit(-1);
+                exitCode = errno;
+                goto exit;
             }
-            if (write(fd[1], node->key, sizeof(wchar_t) * 40) == -1) {
-                printf("Cannot write on the pipe\n");
-                exit(-2);
+            if (write(fd[1], node->key, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                exitCode = errno;
+                free(currWord);
+                goto exit;
             }
             break;
         case 1:
-            if (file == NULL) { exit(4); }
+            assert(file != NULL);
             if (fwprintf(file, L"%ls", node->key) == -1) {
-                printf("Cannot write on the output file\n");
-                exit(-2);
+                exitCode = errno;
+                goto exit;
             }
-            break;
-        default:
-            // mode invalida
-            printf("Invalid mode code\n");
-            exit(3);
             break;
     }
     va_end(ptr);
@@ -56,15 +53,16 @@ void buildRow(h_node *node, int mode, ...) {
             switch (mode) {
                 case 0:
                     swprintf(currWord, 40, L",%ls,%.4g", currNode->key, currFreq->frequency);
-                    if (write(fd[1], currWord, sizeof(wchar_t) * 40) == -1) {
-                        printf("Cannot write on the pipe\n");
-                        exit(-2);
+                    if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                        exitCode = errno;
+                        free(currWord);
+                        goto exit;
                     }
                     break;
                 case 1:
                     if (fwprintf(file, L",%ls,%.4g", currNode->key, currFreq->frequency) == -1) {
-                        printf("Cannot write on the output file\n");
-                        exit(-2);
+                        exitCode = errno;
+                        goto exit;
                     }
                     break;
             }
@@ -77,16 +75,25 @@ void buildRow(h_node *node, int mode, ...) {
     // scrivo "\n" sulla "memoria" di output in modo da terminare la riga relativa a node->key e pulisco la memoria
     switch (mode) {
         case 0:
-            write(fd[1], L"\n", sizeof(wchar_t) * 40);
+            if (write(fd[1], L"\n", sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                exitCode = errno;
+                free(currWord);
+                goto exit;
+            };
             free(currWord);
             break;
         case 1:
-            fwprintf(file, L"\n");
+            if (fwprintf(file, L"\n") == -1) {
+                exitCode = errno;
+                goto exit;
+            };
             break;
     }
+
     freeMap(mainNode->successors);
     free(mainNode);
-    return;
+    exit:
+    return exitCode;
 }
 
 wchar_t *findNextWord(h_node *node) {
@@ -136,15 +143,23 @@ wchar_t *findStartingWord(h_map *fileContent) {
     return findNextWord(startingPunctuation);
 }
 
-int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...) {
+result_t generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...) {
+    assert(mode == 0 || mode == 1); // per gestire gli "errori del programmatore" utilizzo assert
+    int error;
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
     // Se la parola con cui iniziare il testo è stata fornita controlla se quest'ultima è valida.
     // Se la parola con cui iniziare il testo non è fornita ne sceglie una casualmente.
     if (startingWord == NULL) {
         startingWord = findStartingWord(fileContent);
     } else {
         if (mapGet(fileContent, startingWord) == NULL) {
-            printf("Starting word not found.\n");
-            return -1;
+            result.type = errno = STARTING_WORD_NOT_FOUND;
+            result.handler = printErrorMessage;
+            goto exit;
         }
     }
     // inizializzo le variabili in base alla modalità scelta e recupero gli argomenti aggiuntivi
@@ -158,34 +173,33 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
 
     switch (mode) {
         case 0:
-            if (fd == NULL) { exit(4); }
+            assert(fd != NULL);
             break;
         case 1:
-            if (filePath == NULL) { exit(4); }
+            assert(filePath != NULL);
             file = fopen(filePath, "w");
 
             if (file == NULL) {
-                printf("An error occurs while opening file.\n");
-                return -2;
+                result.type = errno;
+                result.handler = perror;
+                goto exit;
             }
 
             file = freopen(filePath, "a", file);
 
             if (file == NULL) {
-                printf("An error occurs while opening file.\n");
-                return -2;
+                result.type = errno;
+                result.handler = perror;
+                goto exit;
             }
-            break;
-        default:
-            printf("Invalid mode code\n");
-            exit(3);
             break;
     }
 
-    wchar_t *formattedWord = malloc(sizeof(wchar_t) * 40);
+    wchar_t *formattedWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 10));
     if (formattedWord == NULL) {
-        printf("out of memory\n");
-        return -1;
+        result.type = errno;
+        result.handler = perror;
+        goto exit;
     }
     int capitalizeNext = 1;
     h_node *currFrequencies = mapGet(fileContent, startingWord);
@@ -216,7 +230,16 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
 
         // Scrivo nella pipe la parola formattata da scrivere nel TXT di output del compito 2
         // Inizializzo le variabili per il prossimo ciclo
-        (mode == 0) ? write(fd[1], formattedWord, sizeof(wchar_t) * 40) : fwprintf(file, L"%ls", formattedWord);
+        error = (mode == 0) ?
+                write(fd[1], formattedWord, sizeof(wchar_t) * (MAX_WORD_LEN + 10)) :
+                fwprintf(file, L"%ls", formattedWord);
+
+        if (error == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit_a;
+        }
+
         currWord = nextWord;
         currFrequencies = mapGet(fileContent, currWord);
         nextWord = findNextWord(currFrequencies);
@@ -224,16 +247,27 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
 
     // comunico al processo che scrive che ho terminato la generazione delle parole
     if (mode == 0) {
-        write(fd[1], L"--", sizeof(wchar_t) * 3);
+        if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+            result.type = errno;
+            result.handler = perror;
+        };
     }
-    purgeCSVNodes(fileContent);
-    freeMap(fileContent);
+
+    exit_a:
     free(formattedWord);
-    return 0;
+    exit:
+    purgeCSVNodes(fileContent);
+    return result;
 }
 
 
-void buildFileRows(h_map *fileContent, int mode, ...) {
+result_t buildFileRows(h_map *fileContent, int mode, ...) {
+    assert(mode == 0 || mode == 1);
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
     // Analizzo tutti gli elementi di fileContent scorrendo tutto l'hashmap
     FILE *file;
     va_list ptr;
@@ -244,20 +278,17 @@ void buildFileRows(h_map *fileContent, int mode, ...) {
 
     switch (mode) {
         case 0:
-            if (fd == NULL) { exit(4);}
+            assert(fd != NULL);
             break;
         case 1:
-            if (filePath == NULL) { exit(4);}
+            assert(filePath != NULL);
             file = fopen(filePath, "w");
 
             if (file == NULL) {
-                printf("An error occurs while opening file.\n");
-                exit(-2);
+                result.type = errno;
+                result.handler = perror;
+                return result;
             }
-            break;
-        default:
-            printf("Invalid mode code\n");
-            exit(3);
             break;
     }
 
@@ -268,97 +299,115 @@ void buildFileRows(h_map *fileContent, int mode, ...) {
         while (currNode != NULL) {
             switch (mode) {
                 case 0:
-                    buildRow(currNode, mode, fd);
+                    result.type = buildRow(currNode, mode, fd);
                     break;
                 case 1:
-                    buildRow(currNode, mode, file);
+                    result.type = buildRow(currNode, mode, file);
                     break;
+            }
+            if (result.type != NO_ERROR) {
+                result.handler = perror;
+                goto exit;
             }
             currNode = currNode->next;
         }
     }
 
     // comunico al processo che scrive che ho terminato la generazione delle righe
+    exit:
     if (mode == 0) {
-        write(fd[1], L"--", sizeof(wchar_t) * 3);
+        if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+            result.type = errno;
+            result.handler = perror;
+        };
     }
-    return;
+    return result;
 }
 
-h_map *processCSV(int fd[]) {
+result_t processCSV(int fd[]) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+    int newRow = 1;
     h_map *data = mapBuild(0);
     h_node **hHead = malloc(sizeof(h_node *)), *currNode;
-    wchar_t *currWord = malloc(sizeof(wchar_t) * 31), *headWord, *tmp;
+    wchar_t *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            *headWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            *tmp;
     FreqNode *currFreq;
-    headWord = NULL;
-    int mode = 0;
 
-    if (hHead == NULL || currWord == NULL) {
-        printf("Out of memory.\n");
-        exit(-1);
+    if (hHead == NULL || currWord == NULL || headWord == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        return result;
     }
 
     // leggo la prima parola dalla pipe
-    if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
-        printf("error");
-        _exit(-1);
+    if (read(fd[0], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+        result.type = errno;
+        result.handler = perror;
+        goto exit;
     }
 
-    if (wcscmp(currWord, L"--") == 0) {
-        printf("Il file di testo è vuoto!\n");
-        free(currWord);
-        free(hHead);
-        return NULL;
+    if (wcscmp(currWord, L"-") == 0) {
+        result.type = errno = EMPTY_FILE;
+        result.handler = printErrorMessage;
+        goto exit;
     }
 
     // Leggo tutte le parole presenti nel CSV tramite la pipe scritta dal processo che legge il CSV
-    while (wcscmp(currWord, L"--") != 0) {
+    while (wcscmp(currWord, L"-") != 0) {
         // fine riga csv
         if (wcscmp(currWord, L"\n") == 0) {
             // aggiungo il nodo costruito, in base alla riga appena letta, al dizionario data
             // il valore del nodo inserito nell'hashmap è la testa di una linked-list di h_node
             // ogni h_node rappresenta un successore di headWord
             mapPut(data, headWord, *hHead);
-            free(headWord);
-            headWord = NULL;
+            newRow = 1;
             *hHead = NULL;
-            if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
-                printf("error");
-                _exit(-1);
+            if (read(fd[0], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                result.type = errno;
+                result.handler = perror;
+                goto exit;
             }
             continue;
         }
 
         // inizio riga csv
-        if (headWord == NULL) {
+        if (newRow == 1) {
             // prima parola della riga
-            headWord = wcsdup(currWord);
+            wcscpy(headWord, currWord);
+            newRow = 0;
         } else {
             // continuo riga csv
             // da ora in poi si alternano "parola,frequenza" fino alla fine della riga ("\n")
-            switch (mode) {
-                case 0: // parola
-                    currNode = hNodeBuild(currWord, NULL);
-                    hNodeAdd(hHead, currNode);
-                    mode = 1;
-                    break;
-                case 1: // frequenza
-                    currFreq = createFreqNode();
-                    currFreq->frequency = wcstod(currWord, &tmp);
-                    currNode->val = currFreq;
-                    mode = 0;
-                    break;
+            currNode = hNodeBuild(currWord, NULL);
+            hNodeAdd(hHead, currNode);
+            if (read(fd[0], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                result.type = errno;
+                result.handler = perror;
+                goto exit;
             }
+            currFreq = createFreqNode();
+            currFreq->frequency = wcstod(currWord, &tmp);
+            currNode->val = currFreq;
         }
 
-        if (read(fd[0], currWord, sizeof(wchar_t) * 31) == -1) {
-            printf("error");
-            _exit(-1);
+        if (read(fd[0], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit;
         }
     }
+
+    result.success = data;
+    exit:
     free(hHead);
     free(currWord);
-    return data;
+    free(headWord);
+    return result;
 }
 
 
@@ -388,13 +437,20 @@ void addToData(h_map *data, wchar_t *prevWord, wchar_t *currWord) {
     }
 }
 
-h_map *processFile(int fd[]) {
+result_t processFile(int fd[]) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
     h_map *data = mapBuild(0);
-    wchar_t *firstWord, *currWord = malloc(sizeof(wchar_t) * 35), *prevWord = malloc(sizeof(wchar_t) * 35);
+    wchar_t *firstWord, *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)), *prevWord = malloc(
+            sizeof(wchar_t) * (MAX_WORD_LEN + 1));
 
     if (currWord == NULL || prevWord == NULL) {
-        printf("Out of memory.\n");
-        exit(-1);
+        result.type = errno;
+        result.handler = perror;
+        return result;
     }
 
     // la prima parola è sempre un punto
@@ -402,33 +458,37 @@ h_map *processFile(int fd[]) {
     mapPut(data, prevWord, createMainNode());
 
     // leggo la prima parola reale del file TXT
-    if (read(fd[0], currWord, (sizeof(wchar_t) * 35)) == -1) {
-        printf("errore\n");
-    };
+    if (read(fd[0], currWord, (sizeof(wchar_t) * (MAX_WORD_LEN + 1))) == -1) {
+        result.type = errno;
+        result.handler = perror;
+        goto exit;
+    }
 
-    if (wcscmp(currWord, L"--") == 0) {
-        printf("Il file di testo è vuoto!\n");
-        free(currWord);
-        free(prevWord);
-        return NULL;
+    if (wcscmp(currWord, L"-") == 0) {
+        result.type = errno = EMPTY_FILE;
+        result.handler = printErrorMessage;
+        goto exit;
     }
 
     firstWord = wcsdup(currWord);
 
-    while (wcscmp(currWord, L"--") != 0) {
+    while (wcscmp(currWord, L"-") != 0) {
         // popolo l'hashmap "data"
         addToData(data, prevWord, currWord);
         wcscpy(prevWord, currWord);
 
-        if (read(fd[0], currWord, (sizeof(wchar_t) * 35)) == -1) {
-            printf("errore\n");
+        if (read(fd[0], currWord, (sizeof(wchar_t) * (MAX_WORD_LEN + 1))) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit;
         };
     }
-
     // l'ultima parola del file è seguita dalla prima
     addToData(data, prevWord, firstWord);
+    result.success = data;
+    exit:
     free(currWord);
     free(prevWord);
-    return data;
+    return result;
 }
 

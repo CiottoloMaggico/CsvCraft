@@ -15,16 +15,21 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="43d5e046-8823-47ef-877e-20502392404f" name="Changes" comment="Multi process version">
-      <change afterPath="$PROJECT_DIR$/tests/prova.csv" afterDir="false" />
+    <list default="true" id="43d5e046-8823-47ef-877e-20502392404f" name="Changes" comment="final v1.0">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/doc/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/README.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/argtable3.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/argtable3.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/argtable3.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/argtable3.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/fileutil.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/fileutil.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/fileutil.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/fileutil.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/map.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/map.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/textgen.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/textgen.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/utils.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/utils.c" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/utils.h" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.c" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/previsioni.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/previsioni.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -120,7 +125,7 @@
     "Native Application.all compito 2 senza sw.executor": "Run",
     "Native Application.all compito 2.executor": "Debug",
     "Native Application.all.executor": "Debug",
-    "Native Application.debug compito 1.executor": "Debug",
+    "Native Application.debug compito 1.executor": "Run",
     "Native Application.debug compito 2 con sw.executor": "Run",
     "Native Application.debug compito 2 senza sw.executor": "Run",
     "Native Application.debug compito 2.executor": "Run",
@@ -131,7 +136,7 @@
     "cf.first.check.clang-format": "false",
     "cidr.known.project.marker": "true",
     "git-widget-placeholder": "multi-process",
-    "last_opened_file_path": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr_out_sp.csv",
+    "last_opened_file_path": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr_out_mp.csv",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -139,7 +144,7 @@
     "nodejs_package_manager_path": "npm",
     "run.code.analysis.last.selected.profile": "pProject Default",
     "settings.editor.selected.configurable": "preferences.keymap",
-    "two.files.diff.last.used.file": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr_out_sp.csv",
+    "two.files.diff.last.used.file": "/home/ciottolomaggico/Scrivania/University/Secondo anno/II Semestre/Sistemi Operativi II/implementazioni/CsvCraft/bin/lotr_out_mp.csv",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -171,7 +176,7 @@
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="all compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr_out.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10000000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="all compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr_out.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10000000 -p" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="all" CONFIG_NAME="all" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
@@ -186,17 +191,17 @@
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="all" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 1 -i ../tests/previsioni.txt  -o lotr_out_sp.csv    " REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 1" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-p -m 1 -i ../tests/lotr.txt  -o lotr_out.csv" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 2 con sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 10000000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 2 con sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr_out.csv&quot; -o &quot;lotr_gen.txt&quot; --word-number 100 -p" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
     </configuration>
-    <configuration name="debug compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-p -m 2 -i &quot;lotr_out.csv&quot; -o &quot;lotr_gen_mp.txt&quot; --word-number 1000" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
+    <configuration name="debug compito 2 senza sw" type="CLionNativeAppRunConfigurationType" PROGRAM_PARAMS="-m 2 -i &quot;lotr_out.csv&quot; -o &quot;lotr_textgen.txt&quot; --word-number 15 -p" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="CsvCraft" TARGET_NAME="debug" CONFIG_NAME="debug" version="1" RUN_PATH="$PROJECT_DIR$/bin/csvcraft">
       <method v="2">
         <option name="RunConfigurationTask" enabled="true" run_configuration_name="debug" run_configuration_type="MAKEFILE_TARGET_RUN_CONFIGURATION" />
       </method>
@@ -421,7 +426,11 @@
       <workItem from="1716316027853" duration="955000" />
       <workItem from="1716366406782" duration="51000" />
       <workItem from="1716368179936" duration="7333000" />
-      <workItem from="1716445408448" duration="19282000" />
+      <workItem from="1716445408448" duration="21089000" />
+      <workItem from="1716477643384" duration="267000" />
+      <workItem from="1716725799981" duration="16810000" />
+      <workItem from="1716793471128" duration="2461000" />
+      <workItem from="1716821622693" duration="12891000" />
     </task>
     <task id="LOCAL-00001" summary="Single process version">
       <option name="closed" value="true" />
@@ -463,7 +472,15 @@
       <option name="project" value="LOCAL" />
       <updated>1716143753068</updated>
     </task>
-    <option name="localTasksCounter" value="6" />
+    <task id="LOCAL-00006" summary="final v1.0">
+      <option name="closed" value="true" />
+      <created>1716470223792</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1716470223792</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -472,7 +489,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Single process version" />
     <MESSAGE value="Multi process version" />
-    <option name="LAST_COMMIT_MESSAGE" value="Multi process version" />
+    <MESSAGE value="final v1.0" />
+    <option name="LAST_COMMIT_MESSAGE" value="final v1.0" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

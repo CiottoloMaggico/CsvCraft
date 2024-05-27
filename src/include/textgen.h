@@ -8,11 +8,16 @@
 #include <wchar.h>
 #include <float.h>
 #include <wctype.h>
+#include <assert.h>
+#include <errno.h>
 #include "utils.h"
 #include "fileutil.h"
 #include "map.h"
 
+extern const int MAX_WORD_LEN;
+
 wchar_t *findNextWord(h_node *node);
+
 /*
  * input:
  *  h_node *node => node è il puntatore alla testa della linked-list dei successori di una data parola (non specificata)
@@ -25,6 +30,7 @@ wchar_t *findNextWord(h_node *node);
 */
 
 wchar_t *findStartingWord(h_map *fileContent);
+
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
@@ -34,7 +40,8 @@ wchar_t *findStartingWord(h_map *fileContent);
  *                    all'insieme dei successori delle parole: "?", "!", "." .
 */
 
-int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...);
+result_t generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...);
+
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
@@ -54,7 +61,8 @@ int generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int
  * int result => exitCode della funzione, se viene ritornato 0 allora l'esecuzione è andata a buon fine
 */
 
-void buildFileRows(h_map *fileContent, int mode, ...);
+result_t buildFileRows(h_map *fileContent, int mode, ...);
+
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
@@ -71,7 +79,8 @@ void buildFileRows(h_map *fileContent, int mode, ...);
  * void result => non fornisce nessun output.
 */
 
-void buildRow(h_node *node, int mode, ...);
+int buildRow(h_node *node, int mode, ...);
+
 /*
  * input:
  * h_node *node => puntatore ad un nodo appartenente all'hashmap che rappresenta il contenuto del file TXT
@@ -92,6 +101,7 @@ void buildRow(h_node *node, int mode, ...);
 */
 
 void addToData(h_map *fileContent, wchar_t *prevWord, wchar_t *currWord);
+
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
@@ -104,7 +114,8 @@ void addToData(h_map *fileContent, wchar_t *prevWord, wchar_t *currWord);
  * void result => non fornisce nessun output.
 */
 
-h_map *processCSV(int fd[]);
+result_t processCSV(int fd[]);
+
 /*
  * input:
  * int fd[] => array di file descriptors relativi alla pipe utilizzata per comunicare con il processo che legge le parole dal CSV
@@ -113,7 +124,7 @@ h_map *processCSV(int fd[]);
  * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file CSV dato in input per il compito 2.
 */
 
-h_map *processFile(int fd[]);
+result_t processFile(int fd[]);
 /*
  * input:
  * int fd[] => array di file descriptors relativi alla pipe utilizzata per comunicare con il processo che legge le parole dal CSV

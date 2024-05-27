@@ -11,10 +11,12 @@
 #include "include/textgen.h"
 #include "include/map.h"
 
+const int MAX_WORD_LEN;
+
 int multiProcessMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
-                wchar_t *beginWord);
+                     wchar_t *beginWord);
 
 int singleProcessMain(int programMode, const char **inputFilePath, const char **outputFilePath, int wordN,
-                wchar_t *beginWord);
+                      wchar_t *beginWord);
 
 int main(int argc, char **argv);

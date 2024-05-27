@@ -11,18 +11,22 @@
 #include "textgen.h"
 #include "utils.h"
 
+extern const int MAX_WORD_LEN;
+
 wchar_t *nextCSVColumn(FILE *file);
+
 /*
  * input:
  * FILE *file => stream del file csv da leggere
  * output:
  * wchar_t *result => caratteri letti dallo stream fino alla prima ",".
  *                    Nel caso il primo carattere letto è "\n", questo viene ritornato immediatamente per comunicare la fine della riga.
- *                    Nel caso in cui il primo carattere letto è WEOF ritorna un puntatore nullo.
+ *                    Nel caso il primo carattere letto è "WEOF", questo viene ritornato immediatamente per comunicare la fine del file.
 */
 
 
-h_map *readAndBuildFileMap(char *path);
+result_t readAndBuildFileMap(char *path);
+
 /*
  * input:
  * char *path => percorso del file in input
@@ -30,7 +34,8 @@ h_map *readAndBuildFileMap(char *path);
  * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file TXT dato in input per il compito 1.
 */
 
-h_map *readAndBuildCSVMap(char *path);
+result_t readAndBuildCSVMap(char *path);
+
 /*
  * input:
  * char *path => percorso del file in input
@@ -39,7 +44,8 @@ h_map *readAndBuildCSVMap(char *path);
 */
 
 
-int readCSVFile(char *path, int fd[]);
+result_t readCSVFile(char *path, int fd[]);
+
 /*
  * input:
  * char *path => nome del file CSV da leggere
@@ -49,7 +55,8 @@ int readCSVFile(char *path, int fd[]);
  * int result => exit code
 */
 
-void readFile(char *path, int fd[]);
+result_t readFile(char *path, int fd[]);
+
 /*
  * input:
  * char *path => nome del file TXT da leggere
@@ -59,7 +66,7 @@ void readFile(char *path, int fd[]);
  * void result => non restituisce output
 */
 
-int writeFileFromPipe(char *path, int fd[]);
+result_t writeFileFromPipe(char *path, int sizeToRead, int fd[]);
 /*
  * input:
  * char *path => nome del file CSV da scrivere

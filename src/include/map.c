@@ -1,6 +1,8 @@
 #include "map.h"
 
+// Ogni volta che l'hashmap si riempie e viene ricreata la sua capacità sarà il doppio di quella precedente
 int MULTIPLY_FACTOR = 2;
+// Grandezza di default dell'hashmap creata se non viene specificata una grandezza valida
 int DEFAULT_SIZE = 1024;
 
 void freeMap(h_map *map) {
@@ -38,8 +40,8 @@ static long long hash(h_map *map, wchar_t *data) {
 h_node *hNodeBuild(wchar_t *key, void *val) {
     h_node *result = malloc(sizeof(h_node));
     if (result == NULL) {
-        printf("out of memory\n");
-        exit(-1);
+        perror("fatal error, crashing");
+        exit(errno);
     }
     result->key = wcsdup(key);
     result->val = val;
@@ -56,18 +58,20 @@ void hNodeAdd(h_node **head, h_node *node) {
 
 h_map *mapBuild(int cap) {
     if (cap <= 2) {
+        // grandezza invalida, la capienza è DEFAULT_SIZE
         cap = DEFAULT_SIZE;
     }
     h_map *result = malloc(sizeof(h_map));
     if (result == NULL) {
-        printf("out of memory\n");
-        exit(-1);
+        perror("fatal error, crashing");
+        exit(errno);
     }
 
+    // alloco la memoria per l'array di "cap" bucket
     result->data = calloc(cap, sizeof(h_node));
     if (result->data == NULL) {
-        printf("out of memory\n");
-        exit(-1);
+        perror("fatal error, crashing");
+        exit(errno);
     }
     result->length = 0;
     result->capacity = cap;
@@ -84,15 +88,18 @@ void mapPut(h_map *map, wchar_t *key, void *val) {
         return;
     }
     if (map->length == map->capacity) {
+        // L'hashmap è piena, deve essere ricreata con una capacità maggiore
         mapResize(map, 0);
     }
+    // calcolo l'hash della chiave dell'elemento da inserire
     long long keyHash = hash(map, key);
     h_node *node = malloc(sizeof(h_node));
     if (node == NULL) {
-        printf("out of memory\n");
-        exit(-1);
+        perror("fatal error, crashing");
+        exit(errno);
     }
 
+    // lo inserisco gestendo le eventuali collisioni con una linked-list
     node->next = map->data[keyHash];
     node->key = wcsdup(key);
     node->val = val;
@@ -102,8 +109,10 @@ void mapPut(h_map *map, wchar_t *key, void *val) {
 }
 
 void *mapGet(h_map *map, wchar_t *key) {
+    // calcolo l'hash della chiave fornita
     long long keyHash = hash(map, key);
     if (map->data[keyHash] == NULL) {
+        // il bucket relativo all'hash è vuoto
         return NULL;
     }
     void *result = NULL;
@@ -111,20 +120,26 @@ void *mapGet(h_map *map, wchar_t *key) {
 
     while (curr != NULL) {
         if (wcscmp(curr->key, key) == 0) {
+            // ho trovato il valore relativo alla chiave in input
             result = curr->val;
+            return result;
         }
         curr = curr->next;
     }
+    // l'elemento cercato non è nell'hashmap
     return result;
 }
 
 void mapResize(h_map *map, int newCap) {
+    // controllo se "newCap" ha un valore valido
     if (newCap <= 2 || newCap < map->length) {
+        // "newCap" non ha un valore valido quindi ingrandisco l'hashmap di "map->capacity * MULTIPLY_FACTOR"
         newCap = map->capacity * MULTIPLY_FACTOR;
     }
     h_map *result = mapBuild(newCap);
     h_node *curr;
 
+    // copio gli elementi della vecchia hashmap nella nuova
     for (int i = 0; i < map->capacity; i++) {
         curr = map->data[i];
         while (curr != NULL) {
@@ -134,6 +149,7 @@ void mapResize(h_map *map, int newCap) {
     }
 
     freeMapNodes(map);
+    // scambio i puntatori all'hashmap in modo che il puntatore map punti alla nuova hashmap
     *map = *result;
     free(result);
 }

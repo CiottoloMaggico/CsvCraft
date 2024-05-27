@@ -1,18 +1,27 @@
 #include "fileutil.h"
 
 wchar_t *nextCSVColumn(FILE *file) {
-    wchar_t *result = malloc(sizeof(wchar_t) * 31), *charToString = malloc(sizeof(wchar_t) * 2);
+    wchar_t *result = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            *charToString = malloc(sizeof(wchar_t) * 2);
+
+    if (result == NULL || charToString == NULL) {
+        perror(NULL);
+        return NULL;
+    }
+
     wint_t currChar = fgetwc(file);
 
     switch (currChar) {
         case WEOF:
-            free(result);
-            result = NULL;
+            // primo carattere "WEOF"
+            swprintf(result, 2, L"%lc", WEOF);
             break;
         case '\n':
+            // primo carattere "\n"
             swprintf(result, 2, L"%lc", currChar);
             break;
         default:
+            // qualsiasi altro carattere, indica l'inizio di una nuova parola/colonna
             wcscpy(result, L"");
 
             while (currChar != ',' && currChar != '\n' && currChar != WEOF) {
@@ -31,56 +40,73 @@ wchar_t *nextCSVColumn(FILE *file) {
     return result;
 }
 
-h_map *readAndBuildFileMap(char *path) {
-    wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *firstWord = malloc(sizeof(wchar_t) * 35), *prevWord = malloc(
-            sizeof(wchar_t) * 35), *currWord = malloc(
-            sizeof(wchar_t) * 35);
+result_t readAndBuildFileMap(char *path) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+    wchar_t *charToString = malloc(sizeof(wchar_t) * 2),
+            *firstWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            *prevWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
+
     if (currWord == NULL || prevWord == NULL || firstWord == NULL || charToString == NULL) {
-        printf("out of memory\n");
-        return NULL;
+        result.type = errno;
+        result.handler = perror;
+        return result;
     }
 
     wcscpy(prevWord, L".");
+    // inizializzo la struttura dati che conterrà il contenuto del file
     h_map *data = mapBuild(0);
+    // La prima "parola" di ogni file è un punto, quindi la aggiungo alla struttura dati
     mapPut(data, prevWord, createMainNode());
     FILE *file = fopen(path, "r");
     wint_t currChar = fgetwc(file);
     int wordLen = 0;
 
     if (currChar == WEOF) {
-        printf("Il file di testo è vuoto!\n");
-        fclose(file);
-        free(firstWord);
-        free(prevWord);
-        free(currWord);
-        free(charToString);
-        return NULL;
+        // il file è vuoto, ritorno il codice di errore
+        result.type = errno = EMPTY_FILE;
+        result.handler = printErrorMessage;
+        goto exit;
     }
 
     while (currChar != WEOF) {
         swprintf(charToString, 2, L"%lc", towlower(currChar));
         if (iswalnum(currChar) == 0) {
+            // currChar è un "separatore" di parola
             if (data->length == 1) {
+                // currWord è la prima parola del file (mi servirà dopo)
                 wcscpy(firstWord, currWord);
             }
             if (wordLen != 0) {
+                // La lunghezza della parola è maggiore di zero quindi la salvo
                 if (currChar == '\'') {
+                    // l'apice viene considerato parte della parola ma carattere di separazione,
+                    // quindi lo concateno a currWord
                     wcscat(currWord, charToString);
                     wordLen++;
                 }
+                // aggiungo la parola appena trovata alla struttura dati, specificando anche la parola precedente
                 addToData(data, prevWord, currWord);
                 wcscpy(prevWord, currWord);
             }
             if (currChar == '!' || currChar == '?' || currChar == '.') {
+                // caratteri di separazione speciali che vengono considerati parole a se
                 wcscpy(currWord, charToString);
+                // aggiungo il carattere come parola alla struttura dati, specificando anche la parola precedente
                 addToData(data, prevWord, currWord);
                 wcscpy(prevWord, currWord);
             }
             wordLen = 0;
         } else {
             if (wordLen == 0) {
+                // primo carattere di una nuova parola, quindi "resetto" currWord
                 wcscpy(currWord, charToString);
             } else {
+                // caratteri successivi al primo, li concateno a currWord
                 wcscat(currWord, charToString);
             }
             wordLen++;
@@ -88,127 +114,197 @@ h_map *readAndBuildFileMap(char *path) {
         currChar = fgetwc(file);
     }
     if (wordLen != 0) {
+        // il testo è terminato senza un carattere di separazione quindi aggiungo la parola finale del file
+        // alla struttura dati
         addToData(data, prevWord, currWord);
     }
+    // l'ultima parola si intende seguita dalla prima
     addToData(data, currWord, firstWord);
+    result.success = data;
 
+    exit:
     fclose(file);
     free(firstWord);
     free(prevWord);
     free(currWord);
     free(charToString);
-    return data;
+    return result;
 }
 
-h_map *readAndBuildCSVMap(char *path) {
+result_t readAndBuildCSVMap(char *path) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+    int newRow = 1;
     h_map *data = mapBuild(0);
-    wchar_t *tmp, *mainWord = NULL, *currWord;
+    wchar_t *tmp, *mainWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)), *currWord;
     h_node **hHead = malloc(sizeof(h_node *)), *currNode;
 
-    if (hHead == NULL) {
-        printf("out of memory\n");
-        return NULL;
+    if (hHead == NULL || mainWord == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        return result;
     }
 
-    int mode = 0;
     FILE *file = fopen(path, "r");
+
+    if (file == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        free(hHead);
+        goto exit;
+    }
+
     FreqNode *currFreq;
+    // leggo la prima parola del CSV
     currWord = nextCSVColumn(file);
 
-    if (currWord == NULL) {
-        printf("Il file di testo è vuoto!\n");
+    if (*currWord == WEOF) {
+        // il file è vuoto, ritorno l'opportuno codice di errore
+        result.type = errno = EMPTY_FILE;
+        result.handler = printErrorMessage;
         free(hHead);
-        fclose(file);
-        return NULL;
+        goto exit;
     }
 
-    while (currWord != NULL) {
+    while (*currWord != WEOF) {
         // fine riga csv
-        if (wcscmp(currWord, L"\n") == 0) {
-            // aggiungo il nodo costruito in base alla riga appena letta al dizionario data
-            // il valore del nodo inserito nell'hashmap è la testa di una linked-list di h_node
-            // ogni h_node rappresenta un successore di mainWord
+        if (*currWord == '\n') {
+            // aggiungo il nodo costruito in base alla riga appena letta al dizionario "data".
+            // Il valore del nodo inserito nell'hashmap è la testa di una linked-list di h_node
+            // ogni h_node rappresenta un successore di mainWord.
             mapPut(data, mainWord, *hHead);
-            free(mainWord);
-            mainWord = NULL;
+            newRow = 1;
             *hHead = NULL;
             currWord = nextCSVColumn(file);
             continue;
         }
 
         // inizio riga csv
-        if (mainWord == NULL) {
+        if (newRow == 1) {
             // prima parola della riga
-            mainWord = wcsdup(currWord);
+            wcscpy(mainWord, currWord);
+            newRow = 0;
         } else {
             // continuo riga csv
             // da ora in poi si alternano "parola,frequenza" fino alla fine della riga ("\n")
-            switch (mode) {
-                case 0: // parola
-                    currNode = hNodeBuild(currWord, NULL);
-                    hNodeAdd(hHead, currNode);
-                    mode = 1;
-                    break;
-                case 1: // frequenza
-                    currFreq = createFreqNode();
-                    currFreq->frequency = wcstod(currWord, &tmp);
-                    currNode->val = currFreq;
-                    mode = 0;
-                    break;
-            }
+            // costruisco il nodo che rappresenta la parola
+            currNode = hNodeBuild(currWord, NULL);
+            hNodeAdd(hHead, currNode);
+            // leggo la frequenza relativa a "currWord"
+            currWord = nextCSVColumn(file);
+            // costruisco il "nodo" che conterrà le informazioni riguardo alla frequenza della parola
+            currFreq = createFreqNode();
+            currFreq->frequency = wcstod(currWord, &tmp);
+            currNode->val = currFreq;
         }
         currWord = nextCSVColumn(file);
     }
 
+    result.success = data;
+    exit:
     fclose(file);
-    return data;
+    free(mainWord);
+    return result;
 }
 
-int readCSVFile(char *path, int fd[]) {
+result_t readCSVFile(char *path, int fd[]) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+
     FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        return result;
+    }
     wchar_t *currWord = nextCSVColumn(file);
 
-    while (currWord != NULL) {
-        write(fd[1], currWord, sizeof(wchar_t) * 31);
+    while (*currWord != WEOF) {
+        // leggo le colonne del csv finchè non finisce il file e le scrivo in una pipe
+        if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit;
+        };
         free(currWord);
         currWord = nextCSVColumn(file);
     }
 
-    write(fd[1], L"--", sizeof(wchar_t) * 3);
+    if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+        // comunico al processo che legge che ho finito il file
+        result.type = errno;
+        result.handler = perror;
+    };
+
+    exit:
     fclose(file);
-    return 1;
+    return result;
 }
 
-void readFile(char *path, int fd[]) {
-    wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *currWord = malloc(sizeof(wchar_t) * 35);
+result_t readFile(char *path, int fd[]) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+    wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
     if (currWord == NULL || charToString == NULL) {
-        printf("out of memory\n");
-        return;
+        result.type = errno;
+        result.handler = perror;
+        return result;
     }
 
     FILE *file = fopen(path, "r");
+    if (file == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        goto exit_b;
+    }
     wint_t currChar = fgetwc(file);
     int wordLen = 0;
 
     while (currChar != WEOF) {
         swprintf(charToString, 2, L"%lc", towlower(currChar));
         if (iswalnum(currChar) == 0) {
+            // currChar è un "separatore" di parola
             if (wordLen != 0) {
+                // La lunghezza della parola è maggiore di zero quindi la salvo
                 if (currChar == '\'') {
+                    // l'apice viene considerato parte della parola ma carattere di separazione,
+                    // quindi lo concateno a currWord
                     wcscat(currWord, charToString);
                     wordLen++;
                 }
-                write(fd[1], currWord, sizeof(wchar_t) * 35);
+                // scrivo la parola appena trovata in una pipe letta dal processo che crea la struttura dati
+                if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                    result.type = errno;
+                    result.handler = perror;
+                    goto exit;
+                };
             }
             if (currChar == '!' || currChar == '?' || currChar == '.') {
+                // caratteri di separazione speciali che vengono considerati parole a se
                 wcscpy(currWord, charToString);
-                write(fd[1], currWord, sizeof(wchar_t) * 35);
+                // scrivo la parola appena trovata in una pipe letta dal processo che crea la struttura dati
+                if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+                    result.type = errno;
+                    result.handler = perror;
+                    goto exit;
+                };
             }
             wordLen = 0;
         } else {
             if (wordLen == 0) {
+                // primo carattere di una nuova parola, quindi "resetto" currWord
                 wcscpy(currWord, charToString);
             } else {
+                // caratteri successivi al primo, li concateno a currWord
                 wcscat(currWord, charToString);
             }
             wordLen++;
@@ -216,46 +312,88 @@ void readFile(char *path, int fd[]) {
         currChar = fgetwc(file);
     }
     if (wordLen != 0) {
-        write(fd[1], currWord, sizeof(wchar_t) * 35);
+        // il testo è terminato senza un carattere di separazione quindi scrivo nella pipe la parola finale del file
+        if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit;
+        };
     }
-    write(fd[1], L"--", sizeof(wchar_t) * 3);
+
+    exit:
     fclose(file);
+    exit_b:
+    // comunico al processo che legge che ho terminato di leggere il file
+    if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+        result.type = errno;
+        result.handler = perror;
+    };
     free(currWord);
     free(charToString);
-    return;
+    return result;
 }
 
 
-int writeFileFromPipe(char *path, int fd[]) {
+result_t writeFileFromPipe(char *path, int sizeToRead, int fd[]) {
+    result_t result = {
+            .type = NO_ERROR,
+            .success = NULL,
+            .handler = NULL,
+    };
+
+    wchar_t *string = malloc(sizeToRead);
+    if (string == NULL) {
+        result.type = errno;
+        result.handler = perror;
+        return result;
+    }
+
+    if (read(fd[0], string, sizeToRead) == -1) {
+        result.type = errno;
+        result.handler = perror;
+        goto exit;
+    }
+
+    if (wcscmp(string, L"-") == 0) {
+        result.type = errno = EMPTY_FILE;
+        result.handler = printErrorMessage;
+        goto exit;
+    }
+
     FILE *file = fopen(path, "w");
 
     if (file == NULL) {
-        printf("An error occurs while opening file.\n");
-        return -2;
+        result.type = errno;
+        result.handler = perror;
+        goto exit_a;
     }
 
     file = freopen(path, "a", file);
 
     if (file == NULL) {
-        printf("An error occurs while opening file.\n");
-        return -2;
+        result.type = errno;
+        result.handler = perror;
+        goto exit_a;
     }
 
-    wchar_t *string = malloc(sizeof(wchar_t) * 40);
-
-    if (read(fd[0], string, (sizeof(wchar_t) * 40)) == -1) {
-        printf("errore");
-    }
-
-    while (wcscmp(string, L"--") != 0) {
-        fwprintf(file, L"%ls", string);
-        if (read(fd[0], string, (sizeof(wchar_t) * 40)) == -1) {
-            printf("errore");
+    while (wcscmp(string, L"-") != 0) {
+        // semplicemente leggo dalla pipe delle parole e le scrivo sul file di output
+        if (fwprintf(file, L"%ls", string) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit_a;
+        };
+        if (read(fd[0], string, sizeToRead) == -1) {
+            result.type = errno;
+            result.handler = perror;
+            goto exit_a;
         }
     }
 
+    exit_a:
     fclose(file);
+    exit:
     free(string);
-    return 0;
+    return result;
 }
 
