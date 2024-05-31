@@ -53,12 +53,13 @@ h_map *mapBuild(int cap);
  * Crea un hashmap con capacità "int cap" e restituisce un puntatore al suo indirizzo di memoria
 */
 
-void mapPut(h_map *map, wchar_t *key, void *val);
+h_node *mapPut(h_map *map, wchar_t *key, void *val);
 
 /*
  * Inserisce all'interno dell'hashmap data in input un nodo di tipo h_node i cui valori sono:
  * node->key = key
  * node->val = val
+ * Restituisce il nodo appena creato.
 */
 
 void *mapGet(h_map *map, wchar_t *key);

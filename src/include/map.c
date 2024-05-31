@@ -81,11 +81,11 @@ h_map *mapBuild(int cap) {
     return result;
 }
 
-void mapPut(h_map *map, wchar_t *key, void *val) {
+h_node *mapPut(h_map *map, wchar_t *key, void *val) {
     h_node *existing = mapGet(map, key);
     if (existing != NULL) {
         existing->val = val;
-        return;
+        return existing;
     }
     if (map->length == map->capacity) {
         // L'hashmap è piena, deve essere ricreata con una capacità maggiore
@@ -105,7 +105,7 @@ void mapPut(h_map *map, wchar_t *key, void *val) {
     node->val = val;
     map->data[keyHash] = node;
     map->length++;
-    return;
+    return node;
 }
 
 void *mapGet(h_map *map, wchar_t *key) {
@@ -115,19 +115,17 @@ void *mapGet(h_map *map, wchar_t *key) {
         // il bucket relativo all'hash è vuoto
         return NULL;
     }
-    void *result = NULL;
     h_node *curr = map->data[keyHash];
 
     while (curr != NULL) {
         if (wcscmp(curr->key, key) == 0) {
             // ho trovato il valore relativo alla chiave in input
-            result = curr->val;
-            return result;
+            return curr->val;
         }
         curr = curr->next;
     }
     // l'elemento cercato non è nell'hashmap
-    return result;
+    return NULL;
 }
 
 void mapResize(h_map *map, int newCap) {

@@ -14,7 +14,7 @@ wchar_t *nextCSVColumn(FILE *file) {
     switch (currChar) {
         case WEOF:
             // primo carattere "WEOF"
-            swprintf(result, 2, L"%lc", WEOF);
+            swprintf(result, 2, L"-");
             break;
         case '\n':
             // primo carattere "\n"
@@ -47,21 +47,18 @@ result_t readAndBuildFileMap(char *path) {
             .handler = NULL,
     };
     wchar_t *charToString = malloc(sizeof(wchar_t) * 2),
-            *firstWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
-            *prevWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
-            *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
+            *nextWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1)),
+            **firstWord = malloc(sizeof(wchar_t *));
 
-    if (currWord == NULL || prevWord == NULL || firstWord == NULL || charToString == NULL) {
+    if (nextWord == NULL || charToString == NULL || firstWord == NULL) {
         result.type = errno;
         result.handler = perror;
         return result;
     }
 
-    wcscpy(prevWord, L".");
     // inizializzo la struttura dati che conterrà il contenuto del file
     h_map *data = mapBuild(0);
-    // La prima "parola" di ogni file è un punto, quindi la aggiungo alla struttura dati
-    mapPut(data, prevWord, createMainNode());
+    MainNode *currWord = NULL;
     FILE *file = fopen(path, "r");
     wint_t currChar = fgetwc(file);
     int wordLen = 0;
@@ -77,37 +74,29 @@ result_t readAndBuildFileMap(char *path) {
         swprintf(charToString, 2, L"%lc", towlower(currChar));
         if (iswalnum(currChar) == 0) {
             // currChar è un "separatore" di parola
-            if (data->length == 1) {
-                // currWord è la prima parola del file (mi servirà dopo)
-                wcscpy(firstWord, currWord);
-            }
             if (wordLen != 0) {
                 // La lunghezza della parola è maggiore di zero quindi la salvo
                 if (currChar == '\'') {
                     // l'apice viene considerato parte della parola ma carattere di separazione,
-                    // quindi lo concateno a currWord
-                    wcscat(currWord, charToString);
+                    // quindi lo concateno a nextWord
+                    wcscat(nextWord, charToString);
                     wordLen++;
                 }
-                // aggiungo la parola appena trovata alla struttura dati, specificando anche la parola precedente
-                addToData(data, prevWord, currWord);
-                wcscpy(prevWord, currWord);
+                currWord = addToData(data, firstWord, currWord, nextWord);
             }
             if (currChar == '!' || currChar == '?' || currChar == '.') {
                 // caratteri di separazione speciali che vengono considerati parole a se
-                wcscpy(currWord, charToString);
-                // aggiungo il carattere come parola alla struttura dati, specificando anche la parola precedente
-                addToData(data, prevWord, currWord);
-                wcscpy(prevWord, currWord);
+                wcscpy(nextWord, charToString);
+                currWord = addToData(data, firstWord, currWord, nextWord);
             }
             wordLen = 0;
         } else {
             if (wordLen == 0) {
-                // primo carattere di una nuova parola, quindi "resetto" currWord
-                wcscpy(currWord, charToString);
+                // primo carattere di una nuova parola, quindi "resetto" nextWord
+                wcscpy(nextWord, charToString);
             } else {
-                // caratteri successivi al primo, li concateno a currWord
-                wcscat(currWord, charToString);
+                // caratteri successivi al primo, li concateno a nextWord
+                wcscat(nextWord, charToString);
             }
             wordLen++;
         }
@@ -116,17 +105,16 @@ result_t readAndBuildFileMap(char *path) {
     if (wordLen != 0) {
         // il testo è terminato senza un carattere di separazione quindi aggiungo la parola finale del file
         // alla struttura dati
-        addToData(data, prevWord, currWord);
+        currWord = addToData(data, firstWord, currWord, nextWord);
     }
     // l'ultima parola si intende seguita dalla prima
-    addToData(data, currWord, firstWord);
+    addToData(data, firstWord, currWord, *firstWord);
     result.success = data;
 
     exit:
     fclose(file);
     free(firstWord);
-    free(prevWord);
-    free(currWord);
+    free(nextWord);
     free(charToString);
     return result;
 }
@@ -161,7 +149,7 @@ result_t readAndBuildCSVMap(char *path) {
     // leggo la prima parola del CSV
     currWord = nextCSVColumn(file);
 
-    if (*currWord == WEOF) {
+    if (wcscmp(currWord, L"-") == 0) {
         // il file è vuoto, ritorno l'opportuno codice di errore
         result.type = errno = EMPTY_FILE;
         result.handler = printErrorMessage;
@@ -169,7 +157,7 @@ result_t readAndBuildCSVMap(char *path) {
         goto exit;
     }
 
-    while (*currWord != WEOF) {
+    while (wcscmp(currWord, L"-") != 0) {
         // fine riga csv
         if (*currWord == '\n') {
             // aggiungo il nodo costruito in base alla riga appena letta al dizionario "data".
@@ -225,7 +213,7 @@ result_t readCSVFile(char *path, int fd[]) {
     }
     wchar_t *currWord = nextCSVColumn(file);
 
-    while (*currWord != WEOF) {
+    while (wcscmp(currWord, L"-") != 0) {
         // leggo le colonne del csv finchè non finisce il file e le scrivo in una pipe
         if (write(fd[1], currWord, sizeof(wchar_t) * (MAX_WORD_LEN + 1)) == -1) {
             result.type = errno;
@@ -236,7 +224,7 @@ result_t readCSVFile(char *path, int fd[]) {
         currWord = nextCSVColumn(file);
     }
 
-    if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+    if (write(fd[1], L"-", sizeof(wchar_t) * 2) == -1) {
         // comunico al processo che legge che ho finito il file
         result.type = errno;
         result.handler = perror;
@@ -253,7 +241,8 @@ result_t readFile(char *path, int fd[]) {
             .success = NULL,
             .handler = NULL,
     };
-    wchar_t *charToString = malloc(sizeof(wchar_t) * 2), *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
+    wchar_t *charToString = malloc(sizeof(wchar_t) * 2),
+            *currWord = malloc(sizeof(wchar_t) * (MAX_WORD_LEN + 1));
     if (currWord == NULL || charToString == NULL) {
         result.type = errno;
         result.handler = perror;
@@ -324,7 +313,7 @@ result_t readFile(char *path, int fd[]) {
     fclose(file);
     exit_b:
     // comunico al processo che legge che ho terminato di leggere il file
-    if (write(fd[1], L"-", sizeof(wchar_t) * 3) == -1) {
+    if (write(fd[1], L"-", sizeof(wchar_t) * 2) == -1) {
         result.type = errno;
         result.handler = perror;
     };

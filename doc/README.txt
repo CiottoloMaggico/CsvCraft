@@ -4,6 +4,8 @@ Struttura del progetto:
     bin/ => contiene l'eseguibile di csvcraft generato dopo la compilazione con il file make
     doc/ => contiene file README
     src/ => contiene i file sorgente .c/.h
+    tests/ => contiene alcuni piccoli test fatti da me + uno script bash per eseguirli tutti in modo comodo e veloce,
+              (lo script non fa nessun controllo sulla correttezza dell'output)
     makefile => file make da utilizzare per compilare il progetto
 
 Utilizzo:
@@ -23,3 +25,4 @@ Utilizzo:
 Esempi:
     - Esecuzione compito 1 singolo processo: ./csvcraft -m 1 -p 1 -i "prova.txt" -o "prova_out.txt"
     - Esecuzione compito 2 singolo processo: ./csvcraft -m 2 -p 1 -i "prova.txt" -o "prova_out.txt" --word-number 10
+    - per altri esempi si può consultare il codice dello script "tests.sh"

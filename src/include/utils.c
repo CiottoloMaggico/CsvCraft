@@ -3,8 +3,9 @@
 // ERROR_STRINGS è un array che contiene le traduzioni leggibili dei codici di errore da me definiti
 const char *ERROR_STRINGS[] = {
         "An error occurs trying to build the data structure needed to solve the task\n",
-        "The starting word provided isn't in the csv provided\n",
+        "The starting word provided isn't in the input csv\n",
         "The input file provided is empty\n",
+        "No punctuation found in the csv, please provide a starting word to generate the random text\n",
 };
 
 void printErrorMessage(const char *prefix) {

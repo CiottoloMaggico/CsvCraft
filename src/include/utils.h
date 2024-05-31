@@ -9,13 +9,19 @@
 #include <errno.h>
 #include "map.h"
 
+typedef enum bool_e {
+    false = 0,
+    true
+} bool_t;
+
 // definisco un enum per gestire in modo consistente gli errori "custom" dovuti alle specifiche del progetto
 typedef enum error_codes_e {
     NO_ERROR = 0,
     BUILD_DATA_STRUCTURE_ERROR,
     STARTING_WORD_NOT_FOUND,
     EMPTY_FILE,
-    MAX_ERROR_NUM = 4,
+    NO_PUNCTUATION,
+    MAX_ERROR_NUM = 5,
 } error_codes_t;
 
 // costruisco la mia "struttura dati" per la gestione degli errori

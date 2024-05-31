@@ -1,7 +1,5 @@
 #include "main.h"
 
-// TODO: remove starting point
-
 // lunghezza massima delle parole all'interno del file di input
 const int MAX_WORD_LEN = 30;
 
@@ -70,6 +68,7 @@ int multiProcessMain(int programMode, const char **inputFilePath, const char **o
                                               (MAX_WORD_LEN + 10);
     h_map *data;
     char *inputPath = strdup(*inputFilePath), *outputPath = strdup(*outputFilePath);
+
     // creo le pipe per far comunicare i processi
     if (pipe(fd1) == -1 || pipe(fd2) == -1) {
         result.type = errno;
@@ -79,7 +78,6 @@ int multiProcessMain(int programMode, const char **inputFilePath, const char **o
 
     // creo il primo processo, sarà il processo che legge il file in input
     pid1 = fork();
-
     if (pid1 == 0) {
         // child
         // eseguo il compito corretto in base al valore di programMode: 1 = compito 1, 2 = compito 2
@@ -200,6 +198,10 @@ int main(int argc, char **argv) {
             // controllo se l'utente ha fornito il parametro obbligatorio "--word-number"
             if (wordNumber->count != 1) {
                 printf("Provide a number of word to be generated\n");
+                goto exit;
+            }
+            if (*(wordNumber->ival) <= 0) {
+                printf("Please provide a word number greater than zero\n");
                 goto exit;
             }
             // controllo se l'utente ha fornito la parola con cui iniziare la generazione

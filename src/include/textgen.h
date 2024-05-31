@@ -10,6 +10,8 @@
 #include <wctype.h>
 #include <assert.h>
 #include <errno.h>
+#include <math.h>
+#include <limits.h>
 #include "utils.h"
 #include "fileutil.h"
 #include "map.h"
@@ -29,7 +31,7 @@ wchar_t *findNextWord(h_node *node);
  *
 */
 
-wchar_t *findStartingWord(h_map *fileContent);
+result_t findStartingWord(h_map *fileContent);
 
 /*
  * input:
@@ -40,7 +42,7 @@ wchar_t *findStartingWord(h_map *fileContent);
  *                    all'insieme dei successori delle parole: "?", "!", "." .
 */
 
-result_t generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, int mode, ...);
+result_t generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord, bool_t singleProcessMode, ...);
 
 /*
  * input:
@@ -58,10 +60,11 @@ result_t generateText(h_map *fileContent, int wordsNumber, wchar_t *startingWord
  * deve essere fornito come argomento aggiuntivo:
  *      char *path => nome del file TXT da scrivere
  * output:
- * int result => exitCode della funzione, se viene ritornato 0 allora l'esecuzione è andata a buon fine
+ * result_t result => comunico al chiamante se l'esecuzione della funzione è terminata con errori o no.
+ * se result.type != NO_ERROR => l'esecuzione è terminata con errori
 */
 
-result_t buildFileRows(h_map *fileContent, int mode, ...);
+result_t buildFileRows(h_map *fileContent, bool_t singleProcessMode, ...);
 
 /*
  * input:
@@ -76,10 +79,11 @@ result_t buildFileRows(h_map *fileContent, int mode, ...);
  *  deve essere fornito come argomento aggiuntivo:
  *      char *path => nome del file CSV da scrivere
  * output:
- * void result => non fornisce nessun output.
+ * result_t result => comunico al chiamante se l'esecuzione della funzione è terminata con errori o no.
+ * se result.type != NO_ERROR => l'esecuzione è terminata con errori
 */
 
-int buildRow(h_node *node, int mode, ...);
+int buildRow(h_node *node, bool_t singleProcessMode, ...);
 
 /*
  * input:
@@ -97,21 +101,26 @@ int buildRow(h_node *node, int mode, ...);
  *  deve essere fornito come argomento aggiuntivo:
  *      FILE *file => output stream su cui scrivere la riga
  * output:
- * void result => non fornisce nessun output.
+ * int result => comunico al chiamante un codice di errore per segnalare se l'esecuzione della funzione è terminata con errori o no.
+ * se result != NO_ERROR => l'esecuzione della funzione è terminata con errori
 */
 
-void addToData(h_map *fileContent, wchar_t *prevWord, wchar_t *currWord);
+MainNode *addToData(h_map *fileContent, wchar_t **firstWord, MainNode *currWord, wchar_t *nextWord);
 
 /*
  * input:
  * h_map *fileContent => fileContent è il puntatore ad un hashmap che rappresenta
  *                       il contenuto del file TXT dato in input nel compito 1.
  *
- * wchar_t *prevWord => puntatore ad una stringa a cui va aggiunto/aggiornato il successore currWord
- * wchar_t *currWord => puntatore ad una stringa che va aggiunta alla struttura dati fileContent se non già presente
+ * wchar_t **firstWord => nel caso in cui currWord == NULL,
+ *                        firstWord viene settato per puntatare alla chiave del
+ *                        nodo relativo a nextWord in fileContent.
+ *                        Altrimenti, non si effettua nessuna operazione con firstWord
+ * MainNode *currWord => puntatore al MainNode relativo al nodo a cui va aggiunto/aggiornato il successore "nextWord"
+ * wchar_t *nextWord => puntatore ad una stringa che va aggiunta alla struttura dati fileContent se non già presente
  *
  * output:
- * void result => non fornisce nessun output.
+ * MainNode *result => puntatore al MainNode relativo a nextWord che è stato anche inserito all'interno di fileContent.
 */
 
 result_t processCSV(int fd[]);
@@ -121,7 +130,9 @@ result_t processCSV(int fd[]);
  * int fd[] => array di file descriptors relativi alla pipe utilizzata per comunicare con il processo che legge le parole dal CSV
  *           dato in input per il compito 2.
  * output:
- * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file CSV dato in input per il compito 2.
+ * result_t result => comunico al chiamante se l'esecuzione della funzione è terminata con errori o no.
+ * Se result.type == NO_ERROR => result.success contiene il puntatore ad un hashmap che rappresenta il contenuto del file CSV dato in input per il compito 2.
+ * Altrimenti, l'esecuzione della funzione è terminata con un errore che può essere "gestito" utilizzando la funzione puntata da result.handler
 */
 
 result_t processFile(int fd[]);
@@ -130,7 +141,9 @@ result_t processFile(int fd[]);
  * int fd[] => array di file descriptors relativi alla pipe utilizzata per comunicare con il processo che legge le parole dal CSV
  *           dato in input per il compito 1.
  * output:
- * h_map *result => puntatore ad un hashmap che rappresenta il contenuto del file TXT dato in input per il compito 1.
+ * h_map *result => comunico al chiamante se l'esecuzione della funzione è terminata con errori o no.
+ * Se result.type == NO_ERROR => result.success contiene il puntatore ad un hashmap che rappresenta il contenuto del file TXT dato in input per il compito 1.
+ * Altrimenti, l'esecuzione della funzione è terminata con un errore che può essere "gestito" utilizzando la funzione puntata da result.handler
 */
 
 #endif
