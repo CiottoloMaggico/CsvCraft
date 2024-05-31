@@ -20,7 +20,7 @@ static const unsigned int scores[][2] = {
 };
 
 int buildRow(h_node *node, bool_t singleProcessMode, ...) {
-    wchar_t *currWord;
+    wchar_t *currWord = NULL;
     va_list ptr;
     va_start(ptr, singleProcessMode);
     int *fd = (singleProcessMode == 0) ? va_arg(ptr, int *) : NULL, exitCode = NO_ERROR;
@@ -312,7 +312,7 @@ result_t buildFileRows(h_map *fileContent, bool_t singleProcessMode, ...) {
             .handler = NULL,
     };
     // Analizzo tutti gli elementi di fileContent scorrendo tutto l'hashmap
-    FILE *file;
+    FILE *file = NULL;
     va_list ptr;
     va_start(ptr, singleProcessMode);
     int *fd = (singleProcessMode == 0) ? va_arg(ptr, int *) : NULL;

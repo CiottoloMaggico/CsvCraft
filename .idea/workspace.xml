@@ -15,36 +15,11 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="43d5e046-8823-47ef-877e-20502392404f" name="Changes" comment="final v1.1">
-      <change afterPath="$PROJECT_DIR$/tests/test10.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test2.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test3.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test3_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test4.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test4_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test5.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test5_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test6.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test6_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test7.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test8.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test8_out.csv" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/tests/test9.txt" afterDir="false" />
+    <list default="true" id="43d5e046-8823-47ef-877e-20502392404f" name="Changes" comment="committed ver">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/doc/README.txt" beforeDir="false" afterPath="$PROJECT_DIR$/doc/README.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/fileutil.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/fileutil.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/map.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/map.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/map.h" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/makefile" beforeDir="false" afterPath="$PROJECT_DIR$/makefile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/include/textgen.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/textgen.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/textgen.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/utils.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/utils.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/include/utils.h" beforeDir="false" afterPath="$PROJECT_DIR$/src/include/utils.h" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main.c" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.c" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/Divina_Commedia.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/Divina_Commedia.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/empty.csv" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test1.csv" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/empty.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test1.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/previsioni.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/previsioni.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/shrek.txt" beforeDir="false" afterPath="$PROJECT_DIR$/tests/shrek.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -449,7 +424,7 @@
       <workItem from="1716881662622" duration="7452000" />
       <workItem from="1716900631364" duration="13218000" />
       <workItem from="1717138012440" duration="2133000" />
-      <workItem from="1717140648651" duration="2266000" />
+      <workItem from="1717140648651" duration="4311000" />
     </task>
     <task id="LOCAL-00001" summary="Single process version">
       <option name="closed" value="true" />
@@ -507,7 +482,23 @@
       <option name="project" value="LOCAL" />
       <updated>1716836956071</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="committed ver">
+      <option name="closed" value="true" />
+      <created>1717142940890</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1717142940890</updated>
+    </task>
+    <task id="LOCAL-00009" summary="committed ver">
+      <option name="closed" value="true" />
+      <created>1717142951410</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1717142951410</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -518,7 +509,8 @@
     <MESSAGE value="Multi process version" />
     <MESSAGE value="final v1.0" />
     <MESSAGE value="final v1.1" />
-    <option name="LAST_COMMIT_MESSAGE" value="final v1.1" />
+    <MESSAGE value="committed ver" />
+    <option name="LAST_COMMIT_MESSAGE" value="committed ver" />
   </component>
   <component name="XSLT-Support.FileAssociations.UIState">
     <expand />

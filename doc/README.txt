@@ -26,3 +26,8 @@ Esempi:
     - Esecuzione compito 1 singolo processo: ./csvcraft -m 1 -p 1 -i "prova.txt" -o "prova_out.txt"
     - Esecuzione compito 2 singolo processo: ./csvcraft -m 2 -p 1 -i "prova.txt" -o "prova_out.txt" --word-number 10
     - per altri esempi si può consultare il codice dello script "tests.sh"
+
+Nota:
+    Ho notato che con alcune versioni di gcc la compilazione del programma da qualche problema se si usa la flag -O3
+    e il programma in versione multi processo.
+    PS. durante lo sviluppo ho utilizzato GCC 13.2.1
